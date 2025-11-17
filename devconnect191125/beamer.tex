@@ -78,7 +78,7 @@
 
 \date{November 18th, 2025 -- Buenos Aires, DevConnect}
 \title{
-  Hacky Schnorr for MPC and ZK with applications to Kohaku wallet}
+  Kohaku Wallet: Post-Quantum Smart Accounts on Ethereum Today}
 \author{\textbf{Simon Masson}, Renaud Dubois\\
 ZKNox\\
 \includegraphics[height=4em]{zknox.png}\\
@@ -88,20 +88,20 @@ Privacy and Compliance Summit}
   \maketitle
 \end{frame}
 
-\begin{frame}{ZKNOX team}
+\begin{frame}{ZKNOX Casting}
   \begin{minipage}{.65\linewidth}
    \begin{tabular}{rl}
-      \multirow{4}{*}{\includegraphics[width=2cm]{NB.jpeg}} & \textbf{Nicolas Bacca}\\
+      \multirow{4}{*}{\includegraphics[width=2cm]{NB.jpeg}} & \textbf{Nicolas Bacca, "Chief"}\\
                                & \small{$20^+$ years experience ($10^+$y web3)}\\
                                & Security and hardware specialist\\
                                & \small{Prev.~Ledger cofounder/CTO}\\
                                & \\
-      \multirow{4}{*}{\includegraphics[width=2cm]{RD.jpeg}} & \textbf{Renaud Dubois}\\
+      \multirow{4}{*}{\includegraphics[width=2cm]{RD.jpeg}} & \textbf{Renaud Dubois, "Agent Smith"}\\
                                & \small{$20^+$ years experience ($3^+$y web3)}\\
                                & Cryptographer\\
                                & \small{Prev.~Ledger, Thales}\\
                                & \\
-      \multirow{4}{*}{\includegraphics[width=2cm]{SM.jpg}} & \textbf{Simon Masson}\\
+      \multirow{4}{*}{\includegraphics[width=2cm]{SM.jpg}} & \textbf{Simon Masson, "Bizut"}\\
                                & \small{$8^+$ years experience ($4^+$y web3)}\\
                                & Cryptographer\\
                                & \small{Prev.~Heliax, Thales}\\
@@ -142,333 +142,161 @@ Privacy and Compliance Summit}
 %     \item Conclusion and perspectives
 %   \end{enumerate}
 % \end{frame}
- \section{Signatures, MultiSigs and ThresholdSigs }
+ \section{Quantum Apocalypse }
     %\frame{\sectionpage}
-    \subsection{Basic Concepts}
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    \begin{frame}{Signatures}
-     
-%      \begin{definition}[Wikipedia]
-%      Identity is the qualities, beliefs, personality traits, appearance, and/or expressions that characterize a person or group.
-%      \end{definition}
-     
-     \only<1>
-     {
-       A digital signature is a mathematical scheme for verifying the authenticity of digital messages or documents.
-     	\begin{center}
-        \includegraphics[width=8cm]{images/signature.jpg}
-        \end{center}
-    
-     }
-           \only<2>{
-            \begin{definition}[(Classical) Digital Signature]
-     A signature scheme is a tuple of function:
-     \begin{itemize}
-     \item $Setup$: returns domain parameters $E(F_p), G, H$
-     \item $KeyGen(E(F_p), G, H, seed)$: returns $(pvk,pubk)=(x,Q)$
-     \item $Sign(x,message)$: returns $Sig$ 
-     \item $Verify(Sig,Q)$: returns {\tt true/false}
-     \end{itemize}
-     
-     \end{definition}
-     \href{https://hyperelliptic.org/EFD/g1p/auto-shortw.html}{{Formulaes}} for elliptic computations.
-     
-     \href{https://neuromancer.sk/std/network}{{Dictionnary of curves parameters}} 
-     
-           }
-      \only<3>
-     {
-     \begin{exampleblock}{Properties}
-       \begin{itemize}
-     \item Unforgeable
-     \item Non repudiation
-     \item {\emph{ Not reusable}}
-     \end{itemize}
-     \end{exampleblock}
-     
-      Most commonly used signature scheme is ECDSA (Bitcoin, Ethereum, Passkeys)
-     \begin{itemize}
-     \item A painfull patent prevented Schnorr from being used, now expired
-     \item Schnorr is used in Taproot, Ed25519, EDDSA POSEIDON (CIRCOMLIB, RAILGUN)
-     
-     \end{itemize} 
-     }
-    
-    
-\end{frame}
+\begin{frame}{Quantum Apocalypse}
 
+Shor algorithm solves factorization and discrete logarithm problems. All current authentication systems are cooked as soon as Quantum computer rises.
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
-\begin{frame}{Threshold-signatures}
-
-
- 
-  \only<1>
-  {
-   A $(k,n)$ threshold signature (TS-Sig) is a digital signature allowing a subset (threshold) of $k$ users from $n$ to {\it aggregate} a signature . 
- 
-   \begin{center}
-        \includegraphics[width=12.2cm]{images/tss.png}
-        \end{center}
-  }
-  \only<2>
-  {
-    \begin{definition}[Threshold Signatures]
-     A multisig scheme is a tuple of function:
-     \begin{itemize}
-     \item $(Setup,  Verify, Sign)$
-     \item $Distributed Keygen$,
-     \item $KeyAgg(Q_1, \ldots Q_n)$ returns $X$
-     \item $SignAgg(Sig_1, \ldots, Sig_n)$ returns $Sig$
-     \end{itemize}
-  \end{definition}
-  }
-
-   
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- \subsection{Under the hood}
-
-\begin{frame}{Disclaimer}
-
- \begin{center}
- \includegraphics[width=12.2cm]{images/panic.jpg}
- \end{center}
-
-
-\end{frame}
- 
-
-\begin{frame}{EC-Schnorr and ECDSA}
-
-SetUP() : Pick a \href{https://github.com/LedgerHQ/speculos/blob/master/src/bolos/cx_ec_domain.c}{{curve}} with parameters $(p,a,b,Gx,Gy,q)$ (\href{https://hyperelliptic.org/EFD/g1p/auto-shortw.html}{{ weierstrass equations and formulaes}} ).
-
-  \begin{center}
-\begin{tabular}{|c|c |c|}
-\hline
-Operation&\includegraphics[width=1cm]{images/schnorr.jpg} & ECDSA \\
-\hline
-KeyGen &$Q=xG$        &$Q=xG$ \\
-
-Nonce$^*$&$k$	&  $k$ \\
-Ephemeral&$R=kG$    &$R=kG$  \\
-\hline
-
-Hash &$e=H(m||R)$ & $e=H(m)$\\
-\hline
-
-Sign &$s=k-xe$    & $s=k^{-1}(e+xr)$  \\
-     & $Sig=(R,s)$ & $Sig=(r,s)$ \\	
-\hline
-Verif &   $R'=sG+eQ$& $r'=(es^{-1}G+rs^{-1}Q)_x $ \\    
-      & Accept if R'=R & Accept if r'=r \\
-\hline
-\end{tabular}  
- \end{center}
- 
- 
- \begin{center}
- \begin{small}
- {\emph{
- (* nonce generation may use \href{https://www.rfc-editor.org/rfc/rfc6979}{{RFC6979}} for misuse resistance)}}
- \end{small}
-\end{center}
-
-\end{frame} 
- 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}{Musig2: using Schnorr additive properties}
-
-   
-       
-
-\only<1>
-{  
-
-Schnorr s part is linear in $(k,x)$ and { linerarity} is cool:
-\begin{tabular}{lllr}
-$s(k,x_1)+s(k,x_2)$&$=$& $s(k, x), $&$\forall  x=x_1+ x_2$\\
-$s(k_1,x)+s(k_2,x)$&$=$& $s(k, x), $&$\forall k=k_1+ k_2$\\
-\end{tabular}
-
-(while ECDSA has degree two monomial in $(k,x)$)
-
- \begin{center}
-\includegraphics[width=4cm]{images/multi3d.jpg}
-\end{center}
-    
-}
-     
-\only<2>
-{     
-Linearity allow homomorphic additions. Idea: split X into $X=\sum a_iX_i$, k into $k=\sum k_i$.
- }
-
-\only<3>
-{
-
-  \begin{center}
-\begin{tabular}{|c|c |c|}
-\hline
-Operation&Schnorr & Insec\_Musig \\
-\hline
-KeyGen &$X=xG$       & $X_i=x_iG$ \\
-{ KeyAgg} & - & X=$\sum_{i=0}^{n-1} a_iX_i$ \\
-Nonce$^*$&$k$	&  $k_i$ \\
-Ephemeral&$R=kG$   & $R_i=k_iG$ \\
-{ Aggregate R}   & -     & $R=(\sum_{i=0}^{n-1} a_i.k_i).G=k.G$\\
-Hash &$e=H(m||R)$ & $e=H(m||R)$\\
-Sign &$s=k-xe$    & $s_i=k_i-a_ix_ie$  \\
-{ Aggregate s} & - & $s=\sum s_i = k-xe$ \\
-\hline
-\end{tabular}  
- \end{center}
- 
- }
- 
-\only<4>
-{  
-Musig2 uses a vectorial nonce of length $\mu$, injected in previous Insec\_Musig scheme.
-
-  \begin{center}
-\begin{tabular}{|c|c |c|}
-\hline
-Operation&Schnorr & Musig2 \\
-\hline
-KeyGen &$X=xG$       & $X_i=x_iG$ \\
-{ KeyAgg} & - & X=$\sum_{i=0}^{n-1} a_iX_i$ \\
-Nonce$^*$&$k$	&  $\vec{k_i}=(k_{i1}, \ldots , k_{i\mu})$ \\
-Ephemeral&$R=kG$   & $\vec{R_i}=\vec{k_i}G$ \\
-Hash Nonce & - & $b=H(X||R_0 \ldots R_\mu ||m)$\\
-
-{ Aggregate R}   & -     & $R=\sum_{j=1}^\mu b^{j-1} (\sum_{i=0}^{n-1} a_i.k_i).G=k.G$\\
-Hash &$e=H(m||R)$ & $e=H(m||R)$\\
-Sign &$s=k-xe$    & $s_i=(\sum_{j=1}^\mu k_ijb^{j-1} )-a_ix_ie$  \\
-{ Aggregate s} & - & $s=\sum s_i = k-xe$ \\
-\hline
-\end{tabular}  
- \end{center}
-  
-  
-}
-\end{frame}
-  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}{Musig2: Thresholdisation Principle}
-
-\only<1>
-{
-Thresholdisation use the principle of \href{https://dl.acm.org/doi/10.1145/359168.359176}{ {Shamir's secret sharing scheme }}, which is in fact a reed solomon erasure code.
-
-Goal: Given enough shares, it is possible to reconstruct the initial value.
-
+\bigskip
 \begin{center}
-\includegraphics[width=4cm]{images/jump.jpg}
-\end{center}            
-
-}
-\only<2>
-{
-Lagrange interpolation enables to switch from points to polynomial coefficients using the following formulaes:
-
-\begin{center}
-\begin{tabular}{cc}
-
-\begin{minipage}{4cm}
-\begin{center}
-\includegraphics[width=4cm]{images/interpolation.jpg}
-\end{center}            
-\end{minipage}
-&         
-\begin{minipage}{4cm}
-$$l_j(x)=\prod_{m\ne j}{x-x_m \over x_j-x_m}.$$
-$$L(x)=\sum_{j=0}^k P(x_j)l_j(x).$$
-\end{minipage}         
-\\
-\end{tabular}
+\includegraphics[width=6cm]{images/Apocalypse.png}
 \end{center}
-The transformation L from $(P_0 \ldots P_k)$ to $(a_0 \ldots a_k)$ is a { linear} transformation in x.
+\end{frame}
 
-\vskip+1cm
-{\emph{Sidenote: This is closely related to the principle of FRI used in starks.}}
 
-}
-\only<3>
-{
-Key ideas:
-\begin{itemize}
-\item interprete aggregated secret key as a polynomial $P$ of degree $k$,
-\item each share (user secret key) is a point of the polynomial,
-\item blind the computation in the curve domain to perform the aggregation only handling public elements,
-\item replace '$\sum_{i=0}^n$' in previous scheme by Lagrange polynomials,
-\item some more steps are necessary (commitments) to avoid cheating.
-\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\begin{frame}{When ?}
 
-Read \href{https://eprint.iacr.org/2020/852.pdf}{{ FROST}} for full description.
 
+\only<1>{
+\begin{center}
+\includegraphics[width=12cm]{images/when1.png}
+\end{center}
 }
 
-
-
-\end{frame}  
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}{Hacky Mul for secp256k1}
-
-
-\begin{itemize}
-\item  Point Multiplication is expensive in solidity (best implementation to date, FCL: 69K with huge precomputations, 200K otherwise). https://eprint.iacr.org/2023/939.pdf
-\item  How to have a low gas Schnorr ?
-\end{itemize}
-
-\only<2>
-{
-Use a ZK verification: complex and expensive, but available in RAILGUN for the privacy property, not only computation.
+\only<2>{
+\begin{center}
+\includegraphics[width=12cm]{images/when2.png}
+\end{center}
 }
 
 \only<3>{
-Original idea for k1 from the V: 
+\begin{center}
 
-\includegraphics[width=8cm]{images/hacky.png}
+Federal agencies:  
+
+NIST: 2035
+ANSSI/BSI: 2030
+
+Blockchains might not care about feds, but for stablecoins regulation, those might be hard deadlines.
+
+\end{center}
 }
 
+\end{frame}
 
-\end{frame}  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\begin{frame}{EF got your back}
 
-\begin{frame}{Hacky Mul for secp256r1}
+\begin{center}
+\includegraphics[width=6cm]{images/lean.jpg}
+\end{center}
 
-Inspired both by V and Y. El Housny: hinted mul for secp256r1 using 7951 verify;
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\begin{frame}{Candidates}
 
-We want to check that given $\alpha, Q$ the equality $alpha.G=Q$ holds.
+\begin{tabular}{ccccc}
+\hline
+Complexity metric & FALCON512 & DILITHIUM2 & SPHINCS+ & GemSS \\
+Public Key size & 897 & 1312 & 32 & 33 \\
+Private Key size & 7553 & 2528& 32 & 64 \\
+Signature size & 666 & 2420 & 17088 & 21952 \\
+\hline
+\end{tabular}
+  
 
-ECDSA verification: 
-$$(i,j)=(h.s^-1).G+(r.s^-1).Q$$
-$$return ~~~i==r$$
+Current proposals:
+\begin{itemize}
+\item FALCON: EIP8052/EIP7619
+\item Dilithium: EIP8051
+\end{itemize}
 
-To check that provided result (hint) $Q=\alpha.G$, set
-$$(h,r,s,Q)= (1-\alpha)x, x, -x, Q)$$
-Where $x$ is G x-ordinate.
+Difference for 8052/7619: zk friendly hash (separate core from hashing to domain), 7932 specification
+
+\bigskip
+
+8051 and 8052 comes with contracts, signers, and hardware signer (8051 only).
+(Wait for next talk for the onchain demonstration).
+
+\end{frame}
 
 
-if $ecdsa\_verify(h,r,s,q)=true$, then provided hint is correct.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\begin{frame}{Advertisement}
 
 
+All is delivered as public good, experiment, integrate, give feedback, hack this week end (ETHGLOBAL).
 
-\end{frame}  
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{center}
+\includegraphics[width=14cm]{images/qr.png}
+\end{center}
 
-\begin{frame}{Conclusion}
+A PQ-vault, staking ETH (gas cost is high, better suited for high amount with few movements)
 
-\end{frame}  
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\begin{frame}{Remarks}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{itemize}  
+\item Authentication must be solved later, (but we shall on the shelf
+solution).
+
+\item Confidentiality shall be solved NOW.
+
+\end{itemize}
+
+Ethereum components at risk:
+\begin{itemize}  
+
+\item EoA private keys (notably using ECDSA)
+\item Private Payments (Private Pool, RAILGUN)
+\item BLS signatures in consensus
+\item Data Availability Sampling (leveraging KZG commitments)
+\end{itemize}
+
+ZKNOX current roadmap is to solve all but last point. (Design and
+integrate signature schemes, not proving scheme).
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\section{Verifiers}
+
+\begin{frame}{Progressive Roadmap}
+
+  Verifiers:
+\begin{itemize}
+\item \textcolor{green}{Step1: use Account Abstraction (EIP-7702+7579/4337) with full
+solidity to experiment}
+\item \textcolor{orange}{Step2: benchmark in nodes  (validate gas hypothesis)}
+
+\item {Step3: EIP accepted }
+
+\item remove eoA (EIP-7701/EIP-7560)
+
+
+\end{itemize}  
+
+Signers:
+\begin{itemize}
+\item \textcolor{green}{Step1: Software signers}
+\item \textcolor{orange}{Step2: hardware signers }
+
+\item remove eoA (EIP-7701/EIP-7560)
+
+
+\end{itemize}  
+
+
+\end{frame}
+
+
 
 \end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+
+
