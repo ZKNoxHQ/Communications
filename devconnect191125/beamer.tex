@@ -1,0 +1,474 @@
+
+\documentclass[aspectratio=1610]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{hyperref} % before url package otherwise there is a pb
+\usepackage{url}
+
+\setbeamertemplate{navigation symbols}{%
+    \usebeamerfont{footline}%
+    \usebeamercolor[fg]{footline}%
+    \hspace{1em}%
+    \insertframenumber/\inserttotalframenumber
+}
+\setbeamercolor{footline}{fg=black}
+
+
+\usepackage{comment}
+
+% fix bug in algorithm2e
+\makeatletter
+
+\usepackage{tikz}
+\usetikzlibrary{calc, positioning, arrows.meta}
+\usetikzlibrary{shapes.geometric} % for ellipse
+\usetikzlibrary{arrows}
+\usetikzlibrary{positioning}
+\tikzset{
+  state/.style={
+    rectangle,
+    rounded corners,
+    draw=black, thick,
+    minimum height=2em,
+    inner sep=2pt,
+    text centered,
+  },
+}
+\usetikzlibrary{tikzmark}
+\usepackage{pgfplots}
+
+\usepackage{multirow}
+\usepackage{multicol}
+
+\newcommand{\NN}{\ensuremath{\mathbb N}}
+\newcommand{\ZZ}{\ensuremath{\mathbb Z}}
+\newcommand{\QQ}{\ensuremath{\mathbb{Q}}}
+\newcommand{\RR}{\ensuremath{\mathbb{R}}}
+\newcommand{\CC}{\ensuremath{\mathbb{C}}}
+\newcommand{\K}{\ensuremath{\mathbb{K}}}
+\newcommand{\PP}{\ensuremath{\mathbb{P}}} % for projective line
+\newcommand{\FF}{\ensuremath{\mathbb F}}
+\newcommand{\F}{\ensuremath{\mathbb F}}
+\newcommand{\GG}{\ensuremath{\mathbb G}}
+\newcommand{\G}{\ensuremath{\mathbb G}}
+\newcommand{\GT}{\ensuremath{\mathbb G_{\text{T}}}}
+\newcommand{\Fp}{\F_p}
+\newcommand{\cO}{\ensuremath{\mathcal O}}
+\newcommand{\cF}{\ensuremath{\mathcal F}}
+\DeclareMathOperator{\Norm}{Norm}
+\DeclareMathOperator{\ord}{ord}
+\DeclareMathOperator{\disc}{Disc}
+\DeclareMathOperator{\coeff}{Coeff}
+\DeclareMathOperator{\cont}{cont}
+\DeclareMathOperator{\reslt}{Res}
+\DeclareMathOperator{\Reslt}{Res}
+\DeclareMathOperator{\Res}{Res}
+\DeclareMathOperator{\val}{val}
+\DeclareMathOperator{\GF}{GF}
+\DeclareMathOperator{\aut}{aut}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\lc}{lc} % for leading coefficient
+\DeclareMathOperator{\Id}{Id} % for Identity
+\DeclareMathOperator{\Div}{div}
+\newcommand{\BLS}{\mbox{BLS}}
+
+\usepackage{fontawesome}
+
+\date{November 18th, 2025 -- Buenos Aires, DevConnect}
+\title{
+  Hacky Schnorr for MPC and ZK with applications to Kohaku wallet}
+\author{\textbf{Simon Masson}, Renaud Dubois\\
+ZKNox\\
+\includegraphics[height=4em]{zknox.png}\\
+Privacy and Compliance Summit}
+\begin{document}
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\begin{frame}{ZKNOX team}
+  \begin{minipage}{.65\linewidth}
+   \begin{tabular}{rl}
+      \multirow{4}{*}{\includegraphics[width=2cm]{NB.jpeg}} & \textbf{Nicolas Bacca}\\
+                               & \small{$20^+$ years experience ($10^+$y web3)}\\
+                               & Security and hardware specialist\\
+                               & \small{Prev.~Ledger cofounder/CTO}\\
+                               & \\
+      \multirow{4}{*}{\includegraphics[width=2cm]{RD.jpeg}} & \textbf{Renaud Dubois}\\
+                               & \small{$20^+$ years experience ($3^+$y web3)}\\
+                               & Cryptographer\\
+                               & \small{Prev.~Ledger, Thales}\\
+                               & \\
+      \multirow{4}{*}{\includegraphics[width=2cm]{SM.jpg}} & \textbf{Simon Masson}\\
+                               & \small{$8^+$ years experience ($4^+$y web3)}\\
+                               & Cryptographer\\
+                               & \small{Prev.~Heliax, Thales}\\
+  \end{tabular}
+\end{minipage}\pause
+\begin{minipage}{.33\linewidth}
+   Expertise and innovation to every challenge on the whole security chain:
+   \begin{itemize}
+   \item user end\\ (secure enclaves, hardware wallets),
+   \item back end\\ (TEE, HSMs),
+   \item on-chain\\ (smart contracts).
+   \end{itemize}
+
+  \pause
+ 
+  \vspace{1em}
+
+  \href{https://zknox.eth.limo/}{\texttt{https://zknox.eth.limo/}}
+
+  \vspace{1em}
+
+  \href{https://github.com/zknoxhq/}{\texttt{https://github.com/zknoxhq/}}
+
+\end{minipage}
+\end{frame}
+
+
+\begin{frame}{Summary}
+ \tableofcontents
+\end{frame}  
+
+% \begin{frame}{Content of this talk}
+%   \begin{enumerate}
+%     \item Introduction: privacy in Ethereum
+%     \item Zero-knowledge circuits in a nutshell
+%     \item Elliptic curve in circuits
+%     \item Hinted scalar multiplications
+%     \item Conclusion and perspectives
+%   \end{enumerate}
+% \end{frame}
+ \section{Signatures, MultiSigs and ThresholdSigs }
+    %\frame{\sectionpage}
+    \subsection{Basic Concepts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    \begin{frame}{Signatures}
+     
+%      \begin{definition}[Wikipedia]
+%      Identity is the qualities, beliefs, personality traits, appearance, and/or expressions that characterize a person or group.
+%      \end{definition}
+     
+     \only<1>
+     {
+       A digital signature is a mathematical scheme for verifying the authenticity of digital messages or documents.
+     	\begin{center}
+        \includegraphics[width=8cm]{images/signature.jpg}
+        \end{center}
+    
+     }
+           \only<2>{
+            \begin{definition}[(Classical) Digital Signature]
+     A signature scheme is a tuple of function:
+     \begin{itemize}
+     \item $Setup$: returns domain parameters $E(F_p), G, H$
+     \item $KeyGen(E(F_p), G, H, seed)$: returns $(pvk,pubk)=(x,Q)$
+     \item $Sign(x,message)$: returns $Sig$ 
+     \item $Verify(Sig,Q)$: returns {\tt true/false}
+     \end{itemize}
+     
+     \end{definition}
+     \href{https://hyperelliptic.org/EFD/g1p/auto-shortw.html}{{Formulaes}} for elliptic computations.
+     
+     \href{https://neuromancer.sk/std/network}{{Dictionnary of curves parameters}} 
+     
+           }
+      \only<3>
+     {
+     \begin{exampleblock}{Properties}
+       \begin{itemize}
+     \item Unforgeable
+     \item Non repudiation
+     \item {\emph{ Not reusable}}
+     \end{itemize}
+     \end{exampleblock}
+     
+      Most commonly used signature scheme is ECDSA (Bitcoin, Ethereum, Passkeys)
+     \begin{itemize}
+     \item A painfull patent prevented Schnorr from being used, now expired
+     \item Schnorr is used in Taproot, Ed25519, EDDSA POSEIDON (CIRCOMLIB, RAILGUN)
+     
+     \end{itemize} 
+     }
+    
+    
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\begin{frame}{Threshold-signatures}
+
+
+ 
+  \only<1>
+  {
+   A $(k,n)$ threshold signature (TS-Sig) is a digital signature allowing a subset (threshold) of $k$ users from $n$ to {\it aggregate} a signature . 
+ 
+   \begin{center}
+        \includegraphics[width=12.2cm]{images/tss.png}
+        \end{center}
+  }
+  \only<2>
+  {
+    \begin{definition}[Threshold Signatures]
+     A multisig scheme is a tuple of function:
+     \begin{itemize}
+     \item $(Setup,  Verify, Sign)$
+     \item $Distributed Keygen$,
+     \item $KeyAgg(Q_1, \ldots Q_n)$ returns $X$
+     \item $SignAgg(Sig_1, \ldots, Sig_n)$ returns $Sig$
+     \end{itemize}
+  \end{definition}
+  }
+
+   
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \subsection{Under the hood}
+
+\begin{frame}{Disclaimer}
+
+ \begin{center}
+ \includegraphics[width=12.2cm]{images/panic.jpg}
+ \end{center}
+
+
+\end{frame}
+ 
+
+\begin{frame}{EC-Schnorr and ECDSA}
+
+SetUP() : Pick a \href{https://github.com/LedgerHQ/speculos/blob/master/src/bolos/cx_ec_domain.c}{{curve}} with parameters $(p,a,b,Gx,Gy,q)$ (\href{https://hyperelliptic.org/EFD/g1p/auto-shortw.html}{{ weierstrass equations and formulaes}} ).
+
+  \begin{center}
+\begin{tabular}{|c|c |c|}
+\hline
+Operation&\includegraphics[width=1cm]{images/schnorr.jpg} & ECDSA \\
+\hline
+KeyGen &$Q=xG$        &$Q=xG$ \\
+
+Nonce$^*$&$k$	&  $k$ \\
+Ephemeral&$R=kG$    &$R=kG$  \\
+\hline
+
+Hash &$e=H(m||R)$ & $e=H(m)$\\
+\hline
+
+Sign &$s=k-xe$    & $s=k^{-1}(e+xr)$  \\
+     & $Sig=(R,s)$ & $Sig=(r,s)$ \\	
+\hline
+Verif &   $R'=sG+eQ$& $r'=(es^{-1}G+rs^{-1}Q)_x $ \\    
+      & Accept if R'=R & Accept if r'=r \\
+\hline
+\end{tabular}  
+ \end{center}
+ 
+ 
+ \begin{center}
+ \begin{small}
+ {\emph{
+ (* nonce generation may use \href{https://www.rfc-editor.org/rfc/rfc6979}{{RFC6979}} for misuse resistance)}}
+ \end{small}
+\end{center}
+
+\end{frame} 
+ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Musig2: using Schnorr additive properties}
+
+   
+       
+
+\only<1>
+{  
+
+Schnorr s part is linear in $(k,x)$ and { linerarity} is cool:
+\begin{tabular}{lllr}
+$s(k,x_1)+s(k,x_2)$&$=$& $s(k, x), $&$\forall  x=x_1+ x_2$\\
+$s(k_1,x)+s(k_2,x)$&$=$& $s(k, x), $&$\forall k=k_1+ k_2$\\
+\end{tabular}
+
+(while ECDSA has degree two monomial in $(k,x)$)
+
+ \begin{center}
+\includegraphics[width=4cm]{images/multi3d.jpg}
+\end{center}
+    
+}
+     
+\only<2>
+{     
+Linearity allow homomorphic additions. Idea: split X into $X=\sum a_iX_i$, k into $k=\sum k_i$.
+ }
+
+\only<3>
+{
+
+  \begin{center}
+\begin{tabular}{|c|c |c|}
+\hline
+Operation&Schnorr & Insec\_Musig \\
+\hline
+KeyGen &$X=xG$       & $X_i=x_iG$ \\
+{ KeyAgg} & - & X=$\sum_{i=0}^{n-1} a_iX_i$ \\
+Nonce$^*$&$k$	&  $k_i$ \\
+Ephemeral&$R=kG$   & $R_i=k_iG$ \\
+{ Aggregate R}   & -     & $R=(\sum_{i=0}^{n-1} a_i.k_i).G=k.G$\\
+Hash &$e=H(m||R)$ & $e=H(m||R)$\\
+Sign &$s=k-xe$    & $s_i=k_i-a_ix_ie$  \\
+{ Aggregate s} & - & $s=\sum s_i = k-xe$ \\
+\hline
+\end{tabular}  
+ \end{center}
+ 
+ }
+ 
+\only<4>
+{  
+Musig2 uses a vectorial nonce of length $\mu$, injected in previous Insec\_Musig scheme.
+
+  \begin{center}
+\begin{tabular}{|c|c |c|}
+\hline
+Operation&Schnorr & Musig2 \\
+\hline
+KeyGen &$X=xG$       & $X_i=x_iG$ \\
+{ KeyAgg} & - & X=$\sum_{i=0}^{n-1} a_iX_i$ \\
+Nonce$^*$&$k$	&  $\vec{k_i}=(k_{i1}, \ldots , k_{i\mu})$ \\
+Ephemeral&$R=kG$   & $\vec{R_i}=\vec{k_i}G$ \\
+Hash Nonce & - & $b=H(X||R_0 \ldots R_\mu ||m)$\\
+
+{ Aggregate R}   & -     & $R=\sum_{j=1}^\mu b^{j-1} (\sum_{i=0}^{n-1} a_i.k_i).G=k.G$\\
+Hash &$e=H(m||R)$ & $e=H(m||R)$\\
+Sign &$s=k-xe$    & $s_i=(\sum_{j=1}^\mu k_ijb^{j-1} )-a_ix_ie$  \\
+{ Aggregate s} & - & $s=\sum s_i = k-xe$ \\
+\hline
+\end{tabular}  
+ \end{center}
+  
+  
+}
+\end{frame}
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Musig2: Thresholdisation Principle}
+
+\only<1>
+{
+Thresholdisation use the principle of \href{https://dl.acm.org/doi/10.1145/359168.359176}{ {Shamir's secret sharing scheme }}, which is in fact a reed solomon erasure code.
+
+Goal: Given enough shares, it is possible to reconstruct the initial value.
+
+\begin{center}
+\includegraphics[width=4cm]{images/jump.jpg}
+\end{center}            
+
+}
+\only<2>
+{
+Lagrange interpolation enables to switch from points to polynomial coefficients using the following formulaes:
+
+\begin{center}
+\begin{tabular}{cc}
+
+\begin{minipage}{4cm}
+\begin{center}
+\includegraphics[width=4cm]{images/interpolation.jpg}
+\end{center}            
+\end{minipage}
+&         
+\begin{minipage}{4cm}
+$$l_j(x)=\prod_{m\ne j}{x-x_m \over x_j-x_m}.$$
+$$L(x)=\sum_{j=0}^k P(x_j)l_j(x).$$
+\end{minipage}         
+\\
+\end{tabular}
+\end{center}
+The transformation L from $(P_0 \ldots P_k)$ to $(a_0 \ldots a_k)$ is a { linear} transformation in x.
+
+\vskip+1cm
+{\emph{Sidenote: This is closely related to the principle of FRI used in starks.}}
+
+}
+\only<3>
+{
+Key ideas:
+\begin{itemize}
+\item interprete aggregated secret key as a polynomial $P$ of degree $k$,
+\item each share (user secret key) is a point of the polynomial,
+\item blind the computation in the curve domain to perform the aggregation only handling public elements,
+\item replace '$\sum_{i=0}^n$' in previous scheme by Lagrange polynomials,
+\item some more steps are necessary (commitments) to avoid cheating.
+\end{itemize}
+
+Read \href{https://eprint.iacr.org/2020/852.pdf}{{ FROST}} for full description.
+
+}
+
+
+
+\end{frame}  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Hacky Mul for secp256k1}
+
+
+\begin{itemize}
+\item  Point Multiplication is expensive in solidity (best implementation to date, FCL: 69K with huge precomputations, 200K otherwise). https://eprint.iacr.org/2023/939.pdf
+\item  How to have a low gas Schnorr ?
+\end{itemize}
+
+\only<2>
+{
+Use a ZK verification: complex and expensive, but available in RAILGUN for the privacy property, not only computation.
+}
+
+\only<3>{
+Original idea for k1 from the V: 
+
+\includegraphics[width=8cm]{images/hacky.png}
+}
+
+
+\end{frame}  
+
+\begin{frame}{Hacky Mul for secp256r1}
+
+Inspired both by V and Y. El Housny: hinted mul for secp256r1 using 7951 verify;
+
+We want to check that given $\alpha, Q$ the equality $alpha.G=Q$ holds.
+
+ECDSA verification: 
+$$(i,j)=(h.s^-1).G+(r.s^-1).Q$$
+$$return ~~~i==r$$
+
+To check that provided result (hint) $Q=\alpha.G$, set
+$$(h,r,s,Q)= (1-\alpha)x, x, -x, Q)$$
+Where $x$ is G x-ordinate.
+
+
+if $ecdsa\_verify(h,r,s,q)=true$, then provided hint is correct.
+
+
+
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Conclusion}
+
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
