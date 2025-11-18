@@ -79,7 +79,7 @@
 \date{November 18th, 2025 -- Buenos Aires, DevConnect}
 \title{
   Kohaku Wallet: Post-Quantum Smart Accounts on Ethereum Today}
-\author{\textbf{Simon Masson}, Renaud Dubois\\
+\author{\textbf{Renaud Dubois}, Simon Masson\\
 ZKNox\\
 \includegraphics[height=4em]{zknox.png}\\
 Privacy and Compliance Summit}
@@ -142,7 +142,7 @@ Privacy and Compliance Summit}
 %     \item Conclusion and perspectives
 %   \end{enumerate}
 % \end{frame}
- \section{ction: Quantum Apocalypse }
+ \section{Introduction: Quantum Apocalypse }
     %\frame{\sectionpage}
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -298,11 +298,12 @@ Signers:
 
 \begin{frame}{Verifiers: implementation results}
 
+  \begin{center}
 \begin{tabular}{ccc}
-
+\hline
 Function & Description & Gas Cost \\
 \hline
-
+\hline
 TETRATION ethfalcon.verify & EVM Friendly* & 24M \\
 \hline
 
@@ -316,15 +317,17 @@ ZKNOX ethfalcon.verify & EVM Friendly & 1.8 M \\
 ZKNOX epervier.verify & Recover EVM friendly &  1.9M \\
 \hline
 \end{tabular}
+\end{center}
+
+\bigskip
 
 
-
-
+  \begin{center}
 \begin{tabular}{ccc}
-
+\hline
 Function & Description & Gas Cost \\
 \hline
-
+\hline
 
 ZKNOX dilithium.verify & NIST & 13.3M \\
 \hline
@@ -334,6 +337,7 @@ ZKNOX ethfalcon.verify & EVM Friendly & 6 M \\
 
 \end{tabular}
 
+\end{center}
 
 
 
@@ -453,9 +457,9 @@ https://github.com/ZKNoxHQ/falzkon
 \begin{frame}{Accomplishments}
 
 \begin{itemize}
-\item dramatical reduction of complexities (ZK and SC verifiers)
+\item dramatical reduction of complexities (ZK and SC verifiers) (x12 gains)
 \item first full suite with secure element PQ signer to on chain contract verification (8051)
-\item 
+\item experimentations for the ZK endgame
 
 \end{itemize}  
 
