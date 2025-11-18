@@ -142,11 +142,11 @@ Privacy and Compliance Summit}
 %     \item Conclusion and perspectives
 %   \end{enumerate}
 % \end{frame}
- \section{Quantum Apocalypse }
+ \section{ction: Quantum Apocalypse }
     %\frame{\sectionpage}
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-\begin{frame}{Quantum Apocalypse}
+\begin{frame}{Introduction: Quantum Apocalypse}
 
 Shor algorithm solves factorization and discrete logarithm problems. All current authentication systems are cooked as soon as Quantum computer rises.
 
@@ -208,7 +208,7 @@ Signature size & 666 & 2420 & 17088 & 21952 \\
 \hline
 \end{tabular}
   
-
+\bigskip
 Current proposals:
 \begin{itemize}
 \item FALCON: EIP8052/EIP7619
@@ -243,28 +243,29 @@ A PQ-vault, staking ETH (gas cost is high, better suited for high amount with fe
 \begin{frame}{Remarks}
 
 \begin{itemize}  
-\item Authentication must be solved later, (but we shall on the shelf
+\item Authentication might be solved a bit later, (but we shall on the shelf
 solution).
 
-\item Confidentiality shall be solved NOW.
+\item \textcolor{red}{Confidentiality shall be solved NOW.}
 
 \end{itemize}
+
+\bigskip
 
 Ethereum components at risk:
-\begin{itemize}  
+\begin{enumerate}  
 
 \item EoA private keys (notably using ECDSA)
-\item Private Payments (Private Pool, RAILGUN)
-\item BLS signatures in consensus
+\item \textcolor{red}{Private Payments (Privacy Pool, TC, sRAILGUN)}
+\item BLS signatures in consensus (lean CL)
 \item Data Availability Sampling (leveraging KZG commitments)
-\end{itemize}
+\end{enumerate}
 
-ZKNOX current roadmap is to solve all but last point. (Design and
-integrate signature schemes, not proving scheme).
+ZKNOX provides solution for first point, and experimentations results for 2 and 3.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-\section{Verifiers}
+\section{Verifiers SC implementation}
 
 \begin{frame}{Progressive Roadmap}
 
@@ -295,8 +296,199 @@ Signers:
 \end{frame}
 
 
+\begin{frame}{Verifiers: implementation results}
 
-\end{document}
+\begin{tabular}{ccc}
+
+Function & Description & Gas Cost \\
+\hline
+
+TETRATION ethfalcon.verify & EVM Friendly* & 24M \\
+\hline
+
+
+ZKNOX falcon.verify & NIST & 7M \\
+\hline
+
+ZKNOX ethfalcon.verify & EVM Friendly & 1.8 M \\
+\hline
+
+ZKNOX epervier.verify & Recover EVM friendly &  1.9M \\
+\hline
+\end{tabular}
+
+
+
+
+\begin{tabular}{ccc}
+
+Function & Description & Gas Cost \\
+\hline
+
+
+ZKNOX dilithium.verify & NIST & 13.3M \\
+\hline
+
+ZKNOX ethfalcon.verify & EVM Friendly & 6 M \\
+\hline
+
+\end{tabular}
+
+
+
+
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\section{Signers implementation}
+
+
+\begin{frame}{Signers implementation}
+
+\begin{tabular}{cccc}
+  \hline
+Scheme & Operation & RAM Consumption & Code size \\
+FALCON & Keygen & 40 Kb & 30-50 Kb \\
+       & Signing & 40 Kb & 30-50 \\
+\hline
+Dilithium & Keygen & 7 Kb & 30-50 Kb \\
+       & Signing & 7 Kb & 30-50 \\
+       \hline
+\end{tabular}
+\bigskip
+
+Low Ram implementation of Dilithium is possible, falcon reach the limit for a SE implementation.
+\bigskip
+
+Next experiment: solve RAM limitation with ORAM (extend RAM with external ciphering on host).
+Part of another ZKNOX implication in Kohaku: universal Ethereum Application.
+
+
+\end{frame}  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 
+\section{Validity and Privacy lattices results}
+
+\begin{frame}{Proving FALCON and DILITHIUM}
+
+Need
+\begin{itemize}
+\item  Allow FALCON/DILITHIUM integration into ZKEVM
+\item  Allow PQ-Private Payments (PQ-Railgun)
+\item Solution for BLS replacement is Batching with snarks/starks.
+\end{itemize}
+
+Second one could use a dedicated scheme (LABRADOR, Lean CL team work).
+
+
+\begin{itemize}
+\item FALCON and DILITHIUM operates on non native fields (Babybear,
+STwo)
+\item  Non Native Fields require x30 more constraints (source:
+Bandersnatch vs P256 in Gnark, https://eprint.iacr.org/2025/933)
+\item Solution for BLS replacement is Batching with snarks/starks.
+\end{itemize}
+
+\end{frame}  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\begin{frame}{ZK friendly FALCON/DILITHIUM}
+
+Obvious tweaks
+
+\begin{itemize}
+  \item Replace Hash function by a ZK friendly one
+ \item Provide hints (see epervier definition) for easy batch inversion
+\item Accumulate several NTT steps, reduce once (Credit to Zhenfei)
+\end{itemize}
+
+Harder tweaks
+
+\begin{itemize}
+\item  Starks fields are going shorter (no accumulation trick)
+Replacing fields is less trivial than for ECC (pick prime order curve
+and twist)
+\item FALCON is prone to overstretch attacks for ZK fields
+\item Estimator for S2/Babybear on dilithium provides 20% slowdown
+factor (WIP)
+\end{itemize}
+
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+
+\begin{frame}{Results}
+
+  \begin{tabular}{cccc }
+    \hline
+  Function	&Description	&gas cost	& Max per block \\
+  \hline
+  ECDSA & Starkware built in & - & 3000 \\
+  \hline
+ETH\_FALCON	&ZKnox Use Keccak-ctr	&102M	&10 \\
+\hline
+ETH\_FALCON	&Starkware+ ZKNOX Keccak-ctr	&340M	3 \\
+\hline
+FALZKON	Use &Blake2s-ctr	&41M	&25 \\
+\hline
+  \end{tabular}
+
+Result for a high level Cairo, dedicated AIR shall dramatically reduce this factor.
+
+\bigskip
+Dilithium requires less hashing and more easily tuned : better zk candidate.
+
+\bigskip
+
+
+https://github.com/ZKNoxHQ/falzkon
+
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\section{Conclusion}
+
+\begin{frame}{Accomplishments}
+
+\begin{itemize}
+\item dramatical reduction of complexities (ZK and SC verifiers)
+\item first full suite with secure element PQ signer to on chain contract verification (8051)
+\item 
+
+\end{itemize}  
+
+\end{frame}  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\begin{frame}{Conclusion}
+
+\textcolor{green}{Easy}
+  \begin{itemize}
+\item Easy solutions for EOA migration (use AA+ 8051/8052)
+\item 8051 and 8052 proposals, help us with ACD 
+\item PQ ciphering (view keys) is easy (just more storage cost)
+\end{itemize}
+
+FALCON is greater for plain constraints, less for ZK/MPC/signers constraints.
+
+\bigskip
+
+\textcolor{red}{Hard}
+\begin{itemize}
+\item no succinct replacement of pairings (consensus + private Payments systems)
+\item almost probably no constant size PQ replacement
+\end{itemize}
+
+Addiction to 0(1) bandwidth will strongly strike those part of the protocol. 
+
+\bigskip
+
+Now let's witness the first full suite with a HW signer and on chain PQC transaction.
+
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\end{document}
 
