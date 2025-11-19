@@ -258,21 +258,23 @@ Privacy and Compliance Summit}
 \end{frame}
 
 % demonstration
-\begin{frame}{Demonstration}
-  Let's see how it works in practice
-
-  \vspace{.5cm}
-
+\begin{frame}[t]{Demonstration}
+  Let's see how it works in practice   \only<1-5>{(sorry for the UX)}\only<6->{: Railgun integration (thanks to Zy0n)}
+  
   \begin{center}
-    Integrated in Railgun
+  \only<2>{\includegraphics[width=6cm]{00000.png}}
+  \only<3>{\includegraphics[width=6cm]{00001.png}}
+  \only<4>{\includegraphics[width=6cm]{00002.png}}
+  \only<5>{\includegraphics[width=6cm]{00003.png}}
+  \only<6>{\includegraphics[width=12cm]{railgun-ledger.jpg}}
 
-    \includegraphics[width=2cm]{railgun.png}
+  \vspace{.25cm}
 
-    \vspace{.5cm}
+  \onslide<7->{
+    soon in
 
-  soon in
-
-  \includegraphics[width=8cm]{kohaku.png}
+    \includegraphics[width=8cm]{kohaku.png}
+  }
   \end{center}
 
 \end{frame}
@@ -283,7 +285,7 @@ Privacy and Compliance Summit}
   \item[$\checkmark$] Hardware implementation of Poseidon hash in Ledger,
   \item[$\checkmark$] Hardware implementation of EdDSA signature for BabyJubjub elliptic curve,
   \item[$\checkmark$] Modular implementation for enabling Jubjub and Bandersnatch elliptic curves,
-  \item[$\checkmark$] FROST integration with Railgun developers (see later this week),
+  \item[$\Box$] HW FROST integration with Railgun developers,
   \item[$\Box$] Optimized scalar multiplication for specific curves,
   \item[$\Box$] BIP32 compliant secret derivation,
   \item[$\Box$] Integration into Kohaku wallet.
