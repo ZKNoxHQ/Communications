@@ -211,8 +211,8 @@ Signature size & 666 & 2420 & 17088 & 21952 \\
 \bigskip
 Current proposals:
 \begin{itemize}
-\item FALCON: EIP8052/EIP7619
-\item Dilithium: EIP8051
+\item FALCON (FNDSA FIP206 draft): EIP8052/EIP7619
+\item Dilithium (MLDSA: FIPS204): EIP8051
 \end{itemize}
 
 Difference for 8052/7619: zk friendly hash (separate core from hashing to domain), 7932 specification
@@ -256,7 +256,7 @@ Ethereum components at risk:
 \begin{enumerate}  
 
 \item EoA private keys (notably using ECDSA)
-\item \textcolor{red}{Private Payments (Privacy Pool, TC, sRAILGUN)}
+\item \textcolor{red}{Private Payments (Privacy Pool, TC, Stealth, RAILGUN)}
 \item BLS signatures in consensus (lean CL)
 \item Data Availability Sampling (leveraging KZG commitments)
 \end{enumerate}
@@ -414,7 +414,7 @@ Harder tweaks
 Replacing fields is less trivial than for ECC (pick prime order curve
 and twist)
 \item FALCON is prone to overstretch attacks for ZK fields
-\item Estimator for S2/Babybear on dilithium provides 20% slowdown
+\item Estimator for S2/Babybear on dilithium provides 20\% slowdown
 factor (WIP)
 \end{itemize}
 
@@ -430,11 +430,11 @@ factor (WIP)
   \hline
   ECDSA & Starkware built in & - & 3000 \\
   \hline
-ETH\_FALCON	&ZKnox Use Keccak-ctr	&102M	&10 \\
+ETH\_FALCON	&ZKnox Use Keccak-ctr	&102M	&50 \\
 \hline
-ETH\_FALCON	&Starkware+ ZKNOX Keccak-ctr	&340M	3 \\
+ETH\_FALCON	&Starkware+ ZKNOX Keccak-ctr	&340M	&15 \\
 \hline
-FALZKON	Use &Blake2s-ctr	&41M	&25 \\
+FALZKON	Use &Blake2s-ctr	&41M	&125 \\
 \hline
   \end{tabular}
 
@@ -458,6 +458,7 @@ https://github.com/ZKNoxHQ/falzkon
 
 \begin{itemize}
 \item dramatical reduction of complexities (ZK and SC verifiers) (x12 gains)
+\item first hardware wallet fully in SE execution of PQ signature
 \item first full suite with secure element PQ signer to on chain contract verification (8051)
 \item experimentations for the ZK endgame
 
