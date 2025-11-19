@@ -217,7 +217,7 @@ Account Abstraction Hub}
 
   \onslide<9->{This work: 
   \begin{itemize}
-    \item smart account with hybrid ECDSA+MLDSA verification!
+    \item smart account with hybrid ECDSA+MLDSA verification,
     \item same user experience, but hardware and post-quantum security.
   \end{itemize}}
 
@@ -291,7 +291,7 @@ Account Abstraction Hub}
       \includegraphics[scale=.25]{trezor.png}
       \includegraphics[scale=.25]{flex.png}
     \end{center}
-    \item Ledger RAM $\leq 40$kB $\Rightarrow$ implem.~as in ia.cr/2022/323 (thanks to \texttt{dop-amin}!)
+    \item Ledger RAM $\leq 50$kB $\Rightarrow$ implem.~as in ia.cr/2022/323 (thanks to \texttt{dop-amin})
     \item Entire computation in the Secure Element (the secret never leaves the enclave)
     \item Provide two signers for the two precompiles:
     \begin{itemize}
@@ -368,6 +368,9 @@ Account Abstraction Hub}
       }
     \end{tikzpicture}
   \end{center}
+  \onslide<11->{
+    Thanks to Alex and Shahaf from 4337 team for the integration help :-)
+  }
 \end{frame}
 
 \begin{frame}{Conclusion and perspectives}
