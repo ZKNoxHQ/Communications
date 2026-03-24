@@ -45,6 +45,10 @@
 
 \usepackage{comment}
 
+% Styled clickable link: blue, underlined, monospace
+\newcommand{\link}[2]{\href{#1}{\textcolor{cyan}{\underline{\texttt{#2}}}}}
+\newcommand{\eiplink}[1]{\link{https://eips.ethereum.org/EIPS/eip-#1}{EIP-#1}}
+
 \usepackage{algorithmic}
 \usepackage[ruled,noline,noend]{algorithm2e}
 \algomargin 0pt
@@ -137,9 +141,7 @@
 \arrayrulecolor{white}
 
 \date{
-  April 1st, 2026\\
-  \texttt{EthCC[9]}\\
-  Cannes, France
+  April 1${}^\text{st}$, 2026 \qquad \link{https://ethcc.io/}{EthCC[9]} \qquad Cannes, France
 }
 \title{
   Future-Proof Your Treasury:\\
@@ -183,7 +185,7 @@
  
   \vspace{1em}
 
-  \href{https://zknox.com/}{\texttt{zknox.com}}
+  \link{https://zknox.com/}{zknox.com}
 
 \end{minipage}
 \end{frame}
@@ -195,32 +197,40 @@
 
   Wallet focusing on privacy and security:
   \begin{itemize}
-    \item Overall presentation by N.~Consigny, Monroe Stage (now :-/)
-    \item Trustless manifesto by S.~Kux, Taylor Stage (after me ;-))
+    \item Overall presentation by N.~Consigny, Monroe Stage (now)
+    \item Trustless manifesto by S.~Kux, Taylor Stage (after me)
     \item Privacy integration in hardware wallets by R.~Dubois, Taylor Stage (yesterday)
     \item \textcolor{gray}{Account abstraction targeted soon, enabling integration of this work!}
   \end{itemize}
+  \link{https://github.com/ethereum/kohaku}{github.com/ethereum/kohaku}
 \end{frame}
 
 \begin{frame}{Why post-quantum?}
   Security of Ethereum relies on \textbf{digital signatures}:
-  \begin{itemize}[<+->]
-    \item ECDSA: Elliptic Curve Digital Signature Algorithm.
-    \item Public key and signature are short (32B to 64B).
-    \item Fast to verify, secure, and trusted.
-    \item \textcolor{red}{A quantum computer breaks the security!}
-    \item Other signatures resist against quantum algorithms.
-    \item 2016: NIST starts a standardization process.
-    \item 2026: Three candidates for post-quantum secure signature.\\
-    Many institutions already integrate PQ security.
-  \end{itemize}
+  \begin{itemize}
+    \onslide<1->{
+      \item ECDSA: Elliptic Curve Digital Signature Algorithm.
+      \item Public key and signature are short (32B to 64B).
+      \item Fast to verify, secure, and trusted.
+      \item \textcolor{red}{A quantum computer breaks the security!}
+    }
+    \onslide<2->{
+      \item Other signatures resist against quantum algorithms.
+      \item Public key and signature much larger (thousands of bytes).
+      \item 2016: NIST starts a standardization process.
+      \item 2026: Three candidates for post-quantum secure signature.\\
+      \phantom{2026: }Many institutions already integrate PQ security.\\
+      \phantom{2026: }Ethereum announces a PQ roadmap\\
+      \phantom{2026: }(Consensus, Data and Execution Layers, see \link{https://strawmap.org}{strawmap.org}).
+    }
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Post-quantum signature candidates}
   \begin{center}
     \begin{tabular}{|l|c|c|c|}
       \hline
-      Standard &  \textbf{FN-DSA} & \textbf{ML-DSA} & \textbf{SLH-DSA}\\
+      Standard &  \link{https://csrc.nist.gov/pubs/fips/203}{{\textbf{FN-DSA}}} & \link{https://csrc.nist.gov/pubs/fips/204}{{\textbf{ML-DSA}}} & \link{https://csrc.nist.gov/pubs/fips/205}{{\textbf{SLH-DSA}}}\\
       Name & Falcon & Dilithium & Sphincs\\
       FIPS &  203 & 204 & 205\\
       Family & Lattice & Lattice & Hash\\
@@ -229,13 +239,13 @@
       \hline
       Public key & \uncover<3->{897B & \textcolor{orange}{1312B} & 32B}\\
       \hline
-      Gas cost verification & \uncover<4->{\multirow{2}{*}{3.9M} & \multirow{2}{*}{8.1M} & \multirow{2}{*}{--}}\\
+      Gas cost verification & \uncover<4->{\multirow{2}{*}{3.8M} & \multirow{2}{*}{8.0M} & \multirow{2}{*}{--}}\\
       without precompile & \uncover<4->{& &}\\
       \hline
       Hardware  & \uncover<5->{\textcolor{orange}{requires a lot} & \textcolor{green}{yes, see later} & \multirow{2}{*}{--}}\\
       implementation & \uncover<5->{\textcolor{orange}{of RAM}  & \textcolor{green}{in this talk} &}\\
       \hline
-      Aggregation & \uncover<6->{eprint 2024/311 & no & no}\\
+      Aggregation & \uncover<6->{\link{https://eprint.iacr.org/2024/311}{Possible} & no & no}\\
       \hline
       TSS & \uncover<6->{okay for small $n$ & yes & no}\\
       \hline
@@ -245,7 +255,7 @@
   \end{center}
 \end{frame}
 
-\begin{frame}{EIP 8051: MLDSA}
+\begin{frame}{\eiplink{8051}: MLDSA}
   Two precompiles:
   \begin{itemize}
     \item ML-DSA-NIST: using the hash function SHAKE256 (compliant to NIST)
@@ -327,12 +337,12 @@
     \end{tikzpicture}
   \end{center}
 
-  \onslide<6->{Instead of hundreds of hashes, the public key is stored in expanded form in a contract.}
+  \onslide<6->{Instead of hundreds of hashes, the public key is stored in expanded form on-chain.}
   
   \onslide<7->{Verifier cost: \textbf 9 SHA256 (or \textbf 5 Keccak256) and \textbf{9} NTTs.}
 \end{frame}
 
-\begin{frame}{EIP 8052: FNDSA}
+\begin{frame}{\eiplink{8052}: FNDSA}
   Two precompiles (separation between hash and sign):
   \begin{itemize}
     \item HashToPoint: hashing a message to a polynomial, can be instantiated with different hash functions,
@@ -343,6 +353,13 @@
   \begin{itemize}
     \item SHAKE-based: NIST-compliant,
     \item KeccakPRNG-based: gas-efficient.
+  \end{itemize}
+  \pause
+  Reducing the verifier cost:
+  \begin{itemize}
+    \item Public key in the NTT domain
+    \item 896B $\to$ 1024B
+    \item Remove one NTT for the verifier
   \end{itemize}
 \end{frame}
 
@@ -392,17 +409,21 @@
 
   \begin{itemize}
     \item Pre-quantum:
-    \begin{itemize}
-      \item ECDSA-k1 (signature in Ethereum standard transaction),
-      \item ECDSA-r1 (signature for passkey).
-    \end{itemize}
+
+    \begin{tabular}{cc}
+      ECDSA-k1 & ECDSA-r1\\
+      \includegraphics[width=2cm]{eth.png}
+      &
+      \includegraphics[width=2cm]{passkey.png}
+      \\
+    \end{tabular}
     \pause
     \item Post-quantum:
     \begin{itemize}
-      \item MLDSA (NIST standard),
-      \item MLDSA-ETH (gas efficient variant),
-      \item FALCON (NIST standard),
-      \item FALCON-ETH (gas efficient variant).
+      \item MLDSA \includegraphics[height=.8em]{nist.jpg}
+      \item MLDSA \includegraphics[height=.8em]{eth.png}
+      \item FALCON \includegraphics[height=.8em]{nist.jpg}
+      \item FALCON \includegraphics[height=.8em]{eth.png}
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -431,13 +452,13 @@
 
   \begin{itemize}[<+->]
     \item Modular: interface verifiers are provided with the account factory
-    \item Possible to use two PQ verifiers {\tiny if you don't know which one to choose ;-)},
+    \item Possible to use two PQ verifiers {\tiny if you don't know which one to choose \faSmileO},
     \item Practical gas costs (without precompile):
     \begin{itemize}[<0->]
-      \item ECDSA + MLDSA: 8.39M gas,
-      \item ECDSA + FALCON: 4.06M gas,
-      \item ECDSA + MLDSA-ETH: 5.12M gas,
-      \item ECDSA + ETH-FALCON: 1.69M gas.
+      \item ECDSA + MLDSA: 8.2M gas,
+      \item ECDSA + FALCON: 3.8M gas,
+      \item ECDSA + MLDSA \includegraphics[height=.8em]{eth.png}: 5.0M gas,
+      \item ECDSA + FALCON \includegraphics[height=.8em]{eth.png}: 1.6M gas.
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -566,7 +587,7 @@
   \end{description}
   \begin{center}
     \onslide<5->{
-      \textbf{\textcolor{blue}{https://pq4337.netlify.app/}}
+      \textbf{\link{https://pq4337.netlify.app/}{pq4337.netlify.app}}
     }
   \end{center}
 \end{frame}
@@ -574,124 +595,129 @@
 \begin{frame}{Conclusion and perspectives}
   Smart accounts with post-quantum security are already available!
   \begin{itemize}
-    \item[\faCheckSquareO] Experimentation with MLDSA and FALCON: decent cost for L2
-    \item[\faSquareO] Production: audit of the code is missing
+    \item[\faCheckSquareO] Experimentation with MLDSA and FALCON:
+    \begin{center}
+      \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Signatures} & \textbf{Create Account} & \textbf{Send Transaction}\\
+        \hline
+        \textbf{ECDSA + MLDSA} & \multirow{2}{*}{5.7M gas} & 8.2M gas\\
+        \textbf{ECDSA + MLDSA}\includegraphics[height=.8em]{eth.png} & & 5.0M gas\\
+        \hline
+        \textbf{ECDSA + FALCON} & \multirow{2}{*}{1.0M gas} & 3.8M gas\\
+        \textbf{ECDSA + FALCON}\includegraphics[height=.8em]{eth.png} &  & 1.6M gas\\
+        \hline
+      \end{tabular}
+    \end{center}
+    \pause
+    \item[\faSquareO] Production: MLDSA-65 for higher security level
+    \item[\faSquareO] Production: audit of the code
     \pause
     \item[\faCheckSquareO] Hardware: MLDSA available (in hybrid)
     \item[\faSquareO] Hardware: FALCON requires a lot of memory
-    \pause
-    \item[\faClockO] L1 is waiting for a precompile:
-    \begin{itemize}
-      \item EIP-8051,
-      \item EIP-8052,
-      \item EIP-7885 (NTT) + hash precompile,
-      \item Vectorized arithmetic precompile.
-    \end{itemize}
-    \pause
-    \item[\faSquareO] Delegation (EIP 7702) and deactivation of EOA (EIP 7851),
-    \item[\faSquareO] Frame transaction (EIP 8141) integration.
   \end{itemize}
-
-  \pause
-  \textcolor{green}{BONUS}: a NFT offered to the first to create a PQ account and sends some ETH to \texttt{zknox.eth} on Sepolia! ;-)
-
 \end{frame}
 
-% \begin{frame}{Hardware implementation}
-%   \begin{itemize}[<+->]
-%     \item Start from NIST FIPS 204 reference code
-%     \begin{center}
-%       \includegraphics[width=5cm]{nist-github.png}
-%     \end{center}
-%     \item Adaptations for low ram constraints:
-%     \begin{center}
-%       \includegraphics[scale=.25]{keystone.png}
-%       \includegraphics[scale=.25]{trezor.png}
-%       \includegraphics[scale=.25]{flex.png}
-%     \end{center}
-%     \item Ledger RAM $\leq 50$kB $\Rightarrow$ implem.~as in ia.cr/2022/323 (thanks to \texttt{dop-amin})
-%     \item Entire computation in the Secure Element (the secret never leaves the enclave)
-%     \item Provide two signers for the two precompiles:
-%     \begin{itemize}
-%       \item MLDSA (SHAKE256 using NIST code) signing in 700ms,
-%       \item MLDSA-ETH (Keccak256 BOLOS calls) signing slower (BOLOS communication).
-%     \end{itemize}
-%     \item Implementation tricks:
-%     \begin{itemize}
-%       \item Recomputation of keygen to save RAM access,
-%       \item Tweaked BIP32 to derive unique secret per hardware
-%       \item Public key (resp.~signature) fetching requires 6 APDUs (resp.~10 APDUs) to get 255B chunks
-%     \end{itemize}
-%     \item Soon on other HW...
-%   \end{itemize}
-% \end{frame}
+\begin{frame}{Future of PQ accounts}
+  \begin{itemize}
+    \item[\faClockO] Possible precompiles:
+    \eiplink{8051} (MLDSA), \eiplink{8052} (FALCON), \eiplink{7885} (NTT), SHAKE precompile, Vectorized arithmetic precompile.\\
+    \pause
+    The remaining cost is call data ($\Box$ = 32B):
+  \end{itemize}
+  \def\u{0.24}% side of one 32B square in cm
+  \begin{tikzpicture}[x=\u cm, y=\u cm,
+    ecdsa/.style={fill=blue!50, draw=blue!70, line width=0.2pt},
+    mldsa/.style={fill=red!50, draw=red!70, line width=0.2pt}]
+    % Column offsets (in grid units)
+    \def\cx{0}%   create column start
+    \def\sx{25}%  send tx column start (gap of 5 units between columns)
+    %
+    % --- Column headers (use cm for text positioning) ---
+    \node[font=\scriptsize\bfseries] at (\cx*\u cm + 1cm, 0cm) {Create Account};
+    \node[font=\scriptsize\bfseries] at (\sx*\u cm + 1cm, 0cm) {Send Transaction};
+    %
+    %
+    % === ECDSA row ===
+    \node[font=\scriptsize\bfseries, anchor=east] at (-0.2cm, -0.6cm) {ECDSA};
+    % Create: 1 square
+    \fill[ecdsa] (\cx, -3) rectangle ++(1,1);
+    \draw[step=1, blue!70, line width=0.2pt] (\cx,-3) grid (\cx+1,-2);
+    % Send tx: 2 squares
+    \fill[ecdsa] (\sx, -3) rectangle ++(2,1);
+    \draw[step=1, blue!70, line width=0.2pt] (\sx,-3) grid (\sx+2,-2);
+    %
+    % === + MLDSA row === (slide 3+)
+    \visible<3->{
+    \node[font=\scriptsize\bfseries, anchor=east] at (-0.2cm, -1.4cm) {ECDSA + MLDSA};
+    %
+    % Create account: 1 ECDSA + 41 MLDSA = 42 squares (3 rows of 20)
+    \fill[ecdsa] (\cx,-6) rectangle ++(1,1);
+    \fill[mldsa] (\cx+1,-6) rectangle ++(19,1);
+    \draw[step=1, black!30, line width=0.1pt] (\cx,-6) grid (\cx+20,-5);
+    \fill[mldsa] (\cx,-7) rectangle ++(20,1);
+    \draw[step=1, black!30, line width=0.1pt] (\cx,-7) grid (\cx+20,-6);
+    \fill[mldsa] (\cx,-8) rectangle ++(2,1);
+    \draw[step=1, black!30, line width=0.1pt] (\cx,-8) grid (\cx+2,-7);
+    %
+    % Send tx: 2 ECDSA + 117 MLDSA = 119 squares (6 rows)
+    \fill[ecdsa] (\sx,-6) rectangle ++(2,1);
+    \fill[mldsa] (\sx+2,-6) rectangle ++(18,1);
+    \draw[step=1, black!30, line width=0.1pt] (\sx,-6) grid (\sx+20,-5);
+    \fill[mldsa] (\sx,-7) rectangle ++(20,1);
+    \draw[step=1, black!30, line width=0.1pt] (\sx,-7) grid (\sx+20,-6);
+    \fill[mldsa] (\sx,-8) rectangle ++(20,1);
+    \draw[step=1, black!30, line width=0.1pt] (\sx,-8) grid (\sx+20,-7);
+    \fill[mldsa] (\sx,-9) rectangle ++(20,1);
+    \draw[step=1, black!30, line width=0.1pt] (\sx,-9) grid (\sx+20,-8);
+    \fill[mldsa] (\sx,-10) rectangle ++(20,1);
+    \draw[step=1, black!30, line width=0.1pt] (\sx,-10) grid (\sx+20,-9);
+    \fill[mldsa] (\sx,-11) rectangle ++(19,1);
+    \draw[step=1, black!30, line width=0.1pt] (\sx,-11) grid (\sx+19,-10);
+    }% end only MLDSA
+    %
+    % === + FALCON === (slide 4+)
+    \visible<4->{
+    \node[font=\scriptsize\bfseries, anchor=east] at (-0.2cm, -3cm) {ECDSA + FALCON};
+    %
+    % Create account: 1 ECDSA + 21 FALCON = 22 squares (2 rows)
+    \fill[ecdsa] (\cx,-13) rectangle ++(1,1);
+    \fill[mldsa, fill=orange!50, draw=orange!70] (\cx+1,-13) rectangle ++(19,1);
+    \draw[step=1, black!30, line width=0.1pt] (\cx,-13) grid (\cx+20,-12);
+    \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\cx,-14) rectangle ++(2,1);
+    \draw[step=1, black!30, line width=0.1pt] (\cx,-14) grid (\cx+2,-13);
+    %
+    % Send tx: 2 ECDSA + 49 FALCON = 51 squares (3 rows)
+    \fill[ecdsa] (\sx,-13) rectangle ++(2,1);
+    \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\sx+2,-13) rectangle ++(18,1);
+    \draw[step=1, black!30, line width=0.1pt] (\sx,-13) grid (\sx+20,-12);
+    \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\sx,-14) rectangle ++(20,1);
+    \draw[step=1, black!30, line width=0.1pt] (\sx,-14) grid (\sx+20,-13);
+    \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\sx,-15) rectangle ++(11,1);
+    \draw[step=1, black!30, line width=0.1pt] (\sx,-15) grid (\sx+11,-14);
+    }% end only FALCON
+  \end{tikzpicture}
+  \onslide<5->{
+    \begin{itemize}    
+      \item[\faSquareO] Delegation (\eiplink{7702}) for spending from the EOA,
+      \item[\faClockO] Deactivation of EOA (\eiplink{7851}),
+      \item[\faClockO] Frame transaction (\eiplink{8141}) integration.
+    \end{itemize}
+  }
+  % \pause
+  % \textcolor{green}{BONUS}: a NFT offered to the first to create a PQ account and sends some ETH to \texttt{zknox.eth} on Sepolia! \faSmileO
+\end{frame}
 
+\begin{frame}
+  \begin{center}
+    Thank you for your attention\\
+    \ \\
+    \textbf{\link{https://pq4337.netlify.app/}{pq4337.netlify.app}}\\
+    \ \\
+    Create and use your quantum-secure account (on Sepolia)!
+  \end{center}
+\end{frame}
 
-% \begin{frame}{Hybrid 4337}
-%   \begin{itemize}[<+->]
-%     \item MLDSA Expanded public key stored on-chain (20512B) per user
-%     \item Hybrid contract:
-%     \begin{enumerate}
-%       \item Fetches the MLDSA public key
-%       \item Verifies the Post-Quantum signature
-%       \item Fetches the ECDSA public key (or Ethereum address)
-%       \item Verifies the ECDSA signature using \texttt{ecrecover}
-%       \item Accepts only if \textbf{both} signatures are valid.
-%     \end{enumerate}
-%   \end{itemize}
-
-%     \begin{center}
-%       \begin{tikzpicture}[
-%         note/.style={draw=white, text=white, rounded corners, minimum width=3cm, minimum height=1cm, align=center},
-%         sigbox/.style={draw=white, fill=purple!40, text=white, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-%         sigbox2/.style={draw=white, fill=purple!40, text=white, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-%         verifbox/.style={draw=white, fill=purple!50, text=white, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-%         4337box/.style={draw=white, fill=green!40, text=black, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-%         boolbox/.style={draw=white, text=white, minimum width=1cm, minimum height=.25cm, align=center},
-%         arrow/.style={thick, ->, >=Stealth, white}
-%       ]
-
-%       % Notes
-%       \onslide<8-9>{
-%         \node[note] (alice) {Alice \\ 1 ETH};
-%         \node[note, right=4cm of alice] (bob) {Bob \\ 0 ETH};
-%       }
-%       \onslide<10->{
-%         \node[note] (alice) {Alice \\ \textcolor{green}{0} ETH};
-%         \node[note, right=4cm of alice] (bob) {Bob \\ \textcolor{green}{1} ETH};
-%       }
-%       \onslide<8->{
-%         \draw[->, white](alice) -- (bob) node[midway, above]{Send 1 ETH} node[midway,below]{\texttt{TxHash}: \texttt{0xaf32..ec39}};
-%       }
-%       \onslide<9->{
-%         \node[sigbox, below=0.1cm of alice] (sig) {EC sig of TxHash};
-%         \node[sigbox2, below=0.1cm of sig] (sigpq) {ML sig of TxHash};
-%       }
-%       \onslide<10->{
-%         \node[4337box, below=0.1cm of bob] (verif) {4337 contract};
-%         \node[boolbox, right=2cm of verif] (bool) {True};
-%         \draw[->, white](verif) --  (bool) node[midway, above]{verif EC?} node [midway, below]{verif ML?};
-%       }
-%     \end{tikzpicture}
-%   \end{center}
-%   \onslide<11->{
-%     Thanks to Alex and Shahaf from 4337 team for the integration help :-)
-%   }
-% \end{frame}
-
-% \begin{frame}{Conclusion and perspectives}
-%  \begin{itemize}[<+->]
-%   \item[$\checkmark$] Hardware implementation of MLDSA and MLDSAETH,
-%   \item[$\checkmark$] Hybrid 4337 account with ECDSA and MLDSA,
-%   \item [$\Box$] BIP32 compliant secret derivation,
-%   \item [$\Box$] Universal Ethereum app enables FN-DSA and ML-DSA on other HW,
-%   \item [$\Box$] More comparisons with FN-DSA,
-%   \item [$\Box$] Experiments on L2 possible but gas is expensive.
-%   \end{itemize}
-%   \begin{flushright}
-%   \onslide<7>{Thank you for your attention.}
-%   \end{flushright}
-% \end{frame}
 
 
 \end{document}
