@@ -237,19 +237,19 @@
       \hline
       Signature & \uncover<2->{\textcolor{green}{666B} & \textcolor{orange}{2420B} & \textcolor{red}{7856B}}\\
       \hline
-      Public key & \uncover<3->{897B & \textcolor{orange}{1312B} & 32B}\\
+      Public key & \uncover<2->{897B & \textcolor{orange}{1312B} & 32B}\\
       \hline
-      Gas cost verification & \uncover<4->{\multirow{2}{*}{3.8M} & \multirow{2}{*}{8.0M} & \multirow{2}{*}{--}}\\
-      without precompile & \uncover<4->{& &}\\
+      Gas cost verification & \uncover<2->{\multirow{2}{*}{3.8M} & \multirow{2}{*}{8.0M} & \multirow{2}{*}{--}}\\
+      without precompile & \uncover<2->{& &}\\
       \hline
-      Hardware  & \uncover<5->{\textcolor{orange}{requires a lot} & \textcolor{green}{yes, see later} & \multirow{2}{*}{--}}\\
-      implementation & \uncover<5->{\textcolor{orange}{of RAM}  & \textcolor{green}{in this talk} &}\\
+      Hardware  & \uncover<3->{\textcolor{orange}{requires a lot} & \textcolor{green}{yes, see later} & \multirow{2}{*}{--}}\\
+      implementation & \uncover<3->{\textcolor{orange}{of RAM}  & \textcolor{green}{in this talk} &}\\
       \hline
-      Aggregation & \uncover<6->{\link{https://eprint.iacr.org/2024/311}{Possible} & no & no}\\
+      Aggregation & \uncover<3->{\link{https://eprint.iacr.org/2024/311}{Possible} & no & no}\\
       \hline
-      TSS & \uncover<6->{okay for small $n$ & yes & no}\\
+      TSS & \uncover<3->{okay for small $n$ & yes & no}\\
       \hline
-      PK recovery & \uncover<6->{yes & no & no}\\
+      PK recovery & \uncover<3->{yes & no & no}\\
       \hline
     \end{tabular}
   \end{center}
@@ -432,7 +432,6 @@
     \begin{algorithmic}
       \STATE \texttt{SigContract1 = SigVerifier(LogicAddress1)}
       \hfill \Comment{\textcolor{gray}{pre-quantum signature verifier}}
-      \pause
       \IF {\texttt{not(SigContract1.verify(PubKey1, digest, Sig1))}}
       \RETURN \texttt{\textcolor{red}{False}}
       \ENDIF
@@ -440,7 +439,6 @@
 
       \STATE \texttt{SigContract2 = SigVerifier(LogicAddress2)}
       \hfill \Comment{\textcolor{gray}{post-quantum signature verifier}}
-      \pause
       \IF {\texttt{not(SigContract2.verify(PubKey2, digest, Sig2))}}
       \RETURN \texttt{\textcolor{red}{False}}
       \ENDIF
@@ -450,11 +448,11 @@
   \end{algorithmic}
   \pause
 
-  \begin{itemize}[<+->]
+  \begin{itemize}
     \item Modular: interface verifiers are provided with the account factory
     \item Possible to use two PQ verifiers {\tiny if you don't know which one to choose \faSmileO},
     \item Practical gas costs (without precompile):
-    \begin{itemize}[<0->]
+    \begin{itemize}
       \item ECDSA + MLDSA: 8.2M gas,
       \item ECDSA + FALCON: 3.8M gas,
       \item ECDSA + MLDSA \includegraphics[height=.8em]{eth.png}: 5.0M gas,
@@ -609,6 +607,7 @@
         \hline
       \end{tabular}
     \end{center}
+    \item[\faWarning] This does not include on-chain data gas cost!
     \pause
     \item[\faSquareO] Production: MLDSA-65 for higher security level
     \item[\faSquareO] Production: audit of the code
@@ -618,99 +617,153 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}{On-chain data gas cost (with the current structure)}
+  \centering
+  \begin{tabular}{|c|lr|lr|}
+    \hline
+    & \multicolumn{2}{c|}{\textbf{Create Account}} & \multicolumn{2}{c|}{\textbf{Send Transaction}}\\
+    &  & Gas & & Gas\\
+    \hline
+    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
+    {\tiny falcon} & {\tiny call data pk} & $1024 \times 16 = 16 384$ & {\tiny call data sig} & $666B \times 16 = 10656$ \\
+    & {\tiny store pk} & $1024B \times 200 = 204 800$ & {\tiny copy pk} & $1024B \times 100 \div 32 = 3 200$ \\
+    & {\tiny total} & \textcolor{green}{$254$k} & {\tiny total} & \textcolor{green}{$17$k}\\
+    \hline
+    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+    {\tiny ecrecover} &  & & {\tiny call data sig} & $32B \times 16 = 512$ \\
+    {\tiny falconrecover} & & & {\tiny call data sig} & $666B \times 16 = 10656$ \\
+    & {\tiny total} & \textcolor{green}{$32$k} & {\tiny total} & \textcolor{green}{$13$k}\\
+    \hline
+    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
+    {\tiny mldsa} & {\tiny call data pk} & $\textcolor{red}{20512} \times 16 = 328 192$ & {\tiny call data sig} & $2420B \times 16 = 38 720$ \\
+    & {\tiny store pk} &  $\textcolor{red}{20512} \times 200 = 4 102 400$ & {\tiny copy pk} & $\textcolor{red}{20512} \times 100 \div 32 = 64100$\\
+    & {\tiny total} & \textcolor{green}{$4462$k} & {\tiny total} & \textcolor{green}{$106$k}\\
+    \hline
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{On-chain data gas cost (estimated)}
+  \centering
+  \begin{tabular}{|c|lr|lr|}
+    \hline
+    & \multicolumn{2}{c|}{\textbf{Create Account}} & \multicolumn{2}{c|}{\textbf{Send Transaction}}\\
+    &  & Gas & & Gas\\
+    \hline
+    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
+    {\tiny falcon} & {\tiny call data pk} & $896B \times 16 = 14 336$ & {\tiny call data sig} & $666B \times 16 = 10656$ \\
+    & {\tiny store pk} & $896B \times 200 = 179 200$ & {\tiny copy pk} & $896B \times 100 \div 32 = 2 800$ \\
+    & {\tiny total} & \textcolor{green}{$226$k} & {\tiny total} & \textcolor{green}{$17$k}\\
+    \hline
+    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
+    {\tiny falconrecover} && & {\tiny call data sig} & $666B \times 16 = 10656$ \\
+    & {\tiny total} & \textcolor{green}{$32$k} & {\tiny total} & \textcolor{green}{$13$k}\\
+    \hline
+    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
+    {\tiny mldsa} & {\tiny call data pk} & $1312B \times 16 = 20 992$ & {\tiny call data sig} & $2420B \times 16 = 38 720$ \\
+    & {\tiny store pk} &  $1312B \times 200 = 262 400$ & {\tiny copy pk} & $1312B \times 100 \div 32 = 4100$\\
+    & {\tiny total} & \textcolor{green}{$315$k} & {\tiny total} & \textcolor{green}{$46$k}\\
+    \hline
+  \end{tabular}
+\end{frame}
+
 \begin{frame}{Future of PQ accounts}
   \begin{itemize}
     \item[\faClockO] Possible precompiles:
-    \eiplink{8051} (MLDSA), \eiplink{8052} (FALCON), \eiplink{7885} (NTT), SHAKE precompile, Vectorized arithmetic precompile.\\
+    \begin{itemize}
+      \item \eiplink{8051} (MLDSA),
+      \item \eiplink{8052} (FALCON),
+      \item \eiplink{7885} (NTT),
+      \item SHAKE precompile,
+      \item Vectorized arithmetic precompile.
+    \end{itemize}
+    The remaining cost is data call/store/copy.
     \pause
-    The remaining cost is call data ($\Box$ = 32B):
-  \end{itemize}
-  \def\u{0.24}% side of one 32B square in cm
-  \begin{tikzpicture}[x=\u cm, y=\u cm,
-    ecdsa/.style={fill=blue!50, draw=blue!70, line width=0.2pt},
-    mldsa/.style={fill=red!50, draw=red!70, line width=0.2pt}]
-    % Column offsets (in grid units)
-    \def\cx{0}%   create column start
-    \def\sx{25}%  send tx column start (gap of 5 units between columns)
-    %
-    % --- Column headers (use cm for text positioning) ---
-    \node[font=\scriptsize\bfseries] at (\cx*\u cm + 1cm, 0cm) {Create Account};
-    \node[font=\scriptsize\bfseries] at (\sx*\u cm + 1cm, 0cm) {Send Transaction};
-    %
-    %
-    % === ECDSA row ===
-    \node[font=\scriptsize\bfseries, anchor=east] at (-0.2cm, -0.6cm) {ECDSA};
-    % Create: 1 square
-    \fill[ecdsa] (\cx, -3) rectangle ++(1,1);
-    \draw[step=1, blue!70, line width=0.2pt] (\cx,-3) grid (\cx+1,-2);
-    % Send tx: 2 squares
-    \fill[ecdsa] (\sx, -3) rectangle ++(2,1);
-    \draw[step=1, blue!70, line width=0.2pt] (\sx,-3) grid (\sx+2,-2);
-    %
-    % === + MLDSA row === (slide 3+)
-    \visible<3->{
-    \node[font=\scriptsize\bfseries, anchor=east] at (-0.2cm, -1.4cm) {ECDSA + MLDSA};
-    %
-    % Create account: 1 ECDSA + 41 MLDSA = 42 squares (3 rows of 20)
-    \fill[ecdsa] (\cx,-6) rectangle ++(1,1);
-    \fill[mldsa] (\cx+1,-6) rectangle ++(19,1);
-    \draw[step=1, black!30, line width=0.1pt] (\cx,-6) grid (\cx+20,-5);
-    \fill[mldsa] (\cx,-7) rectangle ++(20,1);
-    \draw[step=1, black!30, line width=0.1pt] (\cx,-7) grid (\cx+20,-6);
-    \fill[mldsa] (\cx,-8) rectangle ++(2,1);
-    \draw[step=1, black!30, line width=0.1pt] (\cx,-8) grid (\cx+2,-7);
-    %
-    % Send tx: 2 ECDSA + 117 MLDSA = 119 squares (6 rows)
-    \fill[ecdsa] (\sx,-6) rectangle ++(2,1);
-    \fill[mldsa] (\sx+2,-6) rectangle ++(18,1);
-    \draw[step=1, black!30, line width=0.1pt] (\sx,-6) grid (\sx+20,-5);
-    \fill[mldsa] (\sx,-7) rectangle ++(20,1);
-    \draw[step=1, black!30, line width=0.1pt] (\sx,-7) grid (\sx+20,-6);
-    \fill[mldsa] (\sx,-8) rectangle ++(20,1);
-    \draw[step=1, black!30, line width=0.1pt] (\sx,-8) grid (\sx+20,-7);
-    \fill[mldsa] (\sx,-9) rectangle ++(20,1);
-    \draw[step=1, black!30, line width=0.1pt] (\sx,-9) grid (\sx+20,-8);
-    \fill[mldsa] (\sx,-10) rectangle ++(20,1);
-    \draw[step=1, black!30, line width=0.1pt] (\sx,-10) grid (\sx+20,-9);
-    \fill[mldsa] (\sx,-11) rectangle ++(19,1);
-    \draw[step=1, black!30, line width=0.1pt] (\sx,-11) grid (\sx+19,-10);
-    }% end only MLDSA
-    %
-    % === + FALCON === (slide 4+)
-    \visible<4->{
-    \node[font=\scriptsize\bfseries, anchor=east] at (-0.2cm, -3cm) {ECDSA + FALCON};
-    %
-    % Create account: 1 ECDSA + 21 FALCON = 22 squares (2 rows)
-    \fill[ecdsa] (\cx,-13) rectangle ++(1,1);
-    \fill[mldsa, fill=orange!50, draw=orange!70] (\cx+1,-13) rectangle ++(19,1);
-    \draw[step=1, black!30, line width=0.1pt] (\cx,-13) grid (\cx+20,-12);
-    \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\cx,-14) rectangle ++(2,1);
-    \draw[step=1, black!30, line width=0.1pt] (\cx,-14) grid (\cx+2,-13);
-    %
-    % Send tx: 2 ECDSA + 49 FALCON = 51 squares (3 rows)
-    \fill[ecdsa] (\sx,-13) rectangle ++(2,1);
-    \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\sx+2,-13) rectangle ++(18,1);
-    \draw[step=1, black!30, line width=0.1pt] (\sx,-13) grid (\sx+20,-12);
-    \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\sx,-14) rectangle ++(20,1);
-    \draw[step=1, black!30, line width=0.1pt] (\sx,-14) grid (\sx+20,-13);
-    \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\sx,-15) rectangle ++(11,1);
-    \draw[step=1, black!30, line width=0.1pt] (\sx,-15) grid (\sx+11,-14);
-    }% end only FALCON
-  \end{tikzpicture}
-  \onslide<5->{
-    \begin{itemize}    
+  % \def\u{0.24}% side of one 32B square in cm
+  % \begin{tikzpicture}[x=\u cm, y=\u cm,
+  %   ecdsa/.style={fill=blue!50, draw=blue!70, line width=0.2pt},
+  %   mldsa/.style={fill=red!50, draw=red!70, line width=0.2pt}]
+  %   % Column offsets (in grid units)
+  %   \def\cx{0}%   create column start
+  %   \def\sx{25}%  send tx column start (gap of 5 units between columns)
+  %   %
+  %   % --- Column headers (use cm for text positioning) ---
+  %   \node[font=\scriptsize\bfseries] at (\cx*\u cm + 1cm, 0cm) {Create Account};
+  %   \node[font=\scriptsize\bfseries] at (\sx*\u cm + 1cm, 0cm) {Send Transaction};
+  %   %
+  %   %
+  %   % === ECDSA row ===
+  %   \node[font=\scriptsize\bfseries, anchor=east] at (-0.2cm, -0.6cm) {ECDSA};
+  %   % Create: 1 square
+  %   \fill[ecdsa] (\cx, -3) rectangle ++(1,1);
+  %   \draw[step=1, blue!70, line width=0.2pt] (\cx,-3) grid (\cx+1,-2);
+  %   % Send tx: 2 squares
+  %   \fill[ecdsa] (\sx, -3) rectangle ++(2,1);
+  %   \draw[step=1, blue!70, line width=0.2pt] (\sx,-3) grid (\sx+2,-2);
+  %   %
+  %   % === + MLDSA row === (slide 3+)
+  %   \visible<3->{
+  %   \node[font=\scriptsize\bfseries, anchor=east] at (-0.2cm, -1.4cm) {ECDSA + MLDSA};
+  %   %
+  %   % Create account: 1 ECDSA + 41 MLDSA = 42 squares (3 rows of 20)
+  %   \fill[ecdsa] (\cx,-6) rectangle ++(1,1);
+  %   \fill[mldsa] (\cx+1,-6) rectangle ++(19,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\cx,-6) grid (\cx+20,-5);
+  %   \fill[mldsa] (\cx,-7) rectangle ++(20,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\cx,-7) grid (\cx+20,-6);
+  %   \fill[mldsa] (\cx,-8) rectangle ++(2,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\cx,-8) grid (\cx+2,-7);
+  %   %
+  %   % Send tx: 2 ECDSA + 117 MLDSA = 119 squares (6 rows)
+  %   \fill[ecdsa] (\sx,-6) rectangle ++(2,1);
+  %   \fill[mldsa] (\sx+2,-6) rectangle ++(18,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\sx,-6) grid (\sx+20,-5);
+  %   \fill[mldsa] (\sx,-7) rectangle ++(20,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\sx,-7) grid (\sx+20,-6);
+  %   \fill[mldsa] (\sx,-8) rectangle ++(20,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\sx,-8) grid (\sx+20,-7);
+  %   \fill[mldsa] (\sx,-9) rectangle ++(20,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\sx,-9) grid (\sx+20,-8);
+  %   \fill[mldsa] (\sx,-10) rectangle ++(20,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\sx,-10) grid (\sx+20,-9);
+  %   \fill[mldsa] (\sx,-11) rectangle ++(19,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\sx,-11) grid (\sx+19,-10);
+  %   }% end only MLDSA
+  %   %
+  %   % === + FALCON === (slide 4+)
+  %   \visible<4->{
+  %   \node[font=\scriptsize\bfseries, anchor=east] at (-0.2cm, -3cm) {ECDSA + FALCON};
+  %   %
+  %   % Create account: 1 ECDSA + 21 FALCON = 22 squares (2 rows)
+  %   \fill[ecdsa] (\cx,-13) rectangle ++(1,1);
+  %   \fill[mldsa, fill=orange!50, draw=orange!70] (\cx+1,-13) rectangle ++(19,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\cx,-13) grid (\cx+20,-12);
+  %   \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\cx,-14) rectangle ++(2,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\cx,-14) grid (\cx+2,-13);
+  %   %
+  %   % Send tx: 2 ECDSA + 49 FALCON = 51 squares (3 rows)
+  %   \fill[ecdsa] (\sx,-13) rectangle ++(2,1);
+  %   \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\sx+2,-13) rectangle ++(18,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\sx,-13) grid (\sx+20,-12);
+  %   \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\sx,-14) rectangle ++(20,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\sx,-14) grid (\sx+20,-13);
+  %   \fill[fill=orange!50, draw=orange!70, line width=0.2pt] (\sx,-15) rectangle ++(11,1);
+  %   \draw[step=1, black!30, line width=0.1pt] (\sx,-15) grid (\sx+11,-14);
+  %   }% end only FALCON
+  % \end{tikzpicture} 
       \item[\faSquareO] Delegation (\eiplink{7702}) for spending from the EOA,
       \item[\faClockO] Deactivation of EOA (\eiplink{7851}),
       \item[\faClockO] Frame transaction (\eiplink{8141}) integration.
     \end{itemize}
-  }
   % \pause
   % \textcolor{green}{BONUS}: a NFT offered to the first to create a PQ account and sends some ETH to \texttt{zknox.eth} on Sepolia! \faSmileO
-\end{frame}
 
-\begin{frame}
   \begin{center}
-    Thank you for your attention\\
+    \textcolor{yellow}{Thank you for your attention}\\
     \ \\
     \textbf{\link{https://pq4337.netlify.app/}{pq4337.netlify.app}}\\
     \ \\
