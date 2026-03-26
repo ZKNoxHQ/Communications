@@ -172,7 +172,7 @@
                                & Cryptographer\\
                                & \small{Prev.~Heliax, Thales}\\
   \end{tabular}
-\end{minipage}\pause
+\end{minipage}
 \begin{minipage}{.33\linewidth}
    Expertise and innovation to every challenge on the whole security chain:
    \begin{itemize}
@@ -180,8 +180,6 @@
    \item back end\\ (TEE, HSMs),
    \item on-chain\\ (smart contracts).
    \end{itemize}
-
-  \pause
  
   \vspace{1em}
 
@@ -235,21 +233,21 @@
       FIPS &  203 & 204 & 205\\
       Family & Lattice & Lattice & Hash\\
       \hline
-      Signature & \uncover<2->{\textcolor{green}{666B} & \textcolor{orange}{2420B} & \textcolor{red}{7856B}}\\
+      Signature & \textcolor{green}{666B} & \textcolor{orange}{2420B} & \textcolor{red}{7856B}\\
       \hline
-      Public key & \uncover<2->{897B & \textcolor{orange}{1312B} & 32B}\\
+      Public key & 897B & \textcolor{orange}{1312B} & 32B\\
       \hline
-      Gas cost verification & \uncover<2->{\multirow{2}{*}{3.8M} & \multirow{2}{*}{8.0M} & \multirow{2}{*}{--}}\\
-      without precompile & \uncover<2->{& &}\\
+      Gas cost verification & \multirow{2}{*}{3.8M} & \multirow{2}{*}{8.0M} & \multirow{2}{*}{--}\\
+      without precompile & & &\\
       \hline
-      Hardware  & \uncover<3->{\textcolor{orange}{requires a lot} & \textcolor{green}{yes, see later} & \multirow{2}{*}{--}}\\
-      implementation & \uncover<3->{\textcolor{orange}{of RAM}  & \textcolor{green}{in this talk} &}\\
+      Hardware  & \uncover<2->{\textcolor{orange}{requires a lot} & \textcolor{green}{yes, see later} & \multirow{2}{*}{--}}\\
+      implementation & \uncover<2->{\textcolor{orange}{of RAM}  & \textcolor{green}{in this talk} &}\\
       \hline
-      Aggregation & \uncover<3->{\link{https://eprint.iacr.org/2024/311}{Possible} & no & no}\\
+      Aggregation & \uncover<2->{\link{https://eprint.iacr.org/2024/311}{Possible} & no & no}\\
       \hline
-      TSS & \uncover<3->{okay for small $n$ & yes & no}\\
+      TSS & \uncover<2->{okay for small $n$ & yes & no}\\
       \hline
-      PK recovery & \uncover<3->{yes & no & no}\\
+      PK recovery & \uncover<2->{\textcolor{green}{yes} & no & no}\\
       \hline
     \end{tabular}
   \end{center}
@@ -337,9 +335,7 @@
     \end{tikzpicture}
   \end{center}
 
-  \onslide<6->{Instead of hundreds of hashes, the public key is stored in expanded form on-chain.}
-  
-  \onslide<7->{Verifier cost: \textbf 9 SHA256 (or \textbf 5 Keccak256) and \textbf{9} NTTs.}
+  \onslide<6->{Verifier cost: \textbf 9 SHA256 (or \textbf 5 Keccak256) and \textbf{9} NTTs.}
 \end{frame}
 
 \begin{frame}{\eiplink{8052}: FNDSA}
@@ -617,72 +613,8 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{On-chain data gas cost (with the current structure)}
-  \centering
-  \begin{tabular}{|c|lr|lr|}
-    \hline
-    & \multicolumn{2}{c|}{\textbf{Create Account}} & \multicolumn{2}{c|}{\textbf{Send Transaction}}\\
-    &  & Gas & & Gas\\
-    \hline
-    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
-    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
-    {\tiny falcon} & {\tiny call data pk} & $1024 \times 16 = 16 384$ & {\tiny call data sig} & $666B \times 16 = 10656$ \\
-    & {\tiny store pk} & $1024B \times 200 = 204 800$ & {\tiny copy pk} & $1024B \times 100 \div 32 = 3 200$ \\
-    & {\tiny total} & \textcolor{green}{$254$k} & {\tiny total} & \textcolor{green}{$17$k}\\
-    \hline
-    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
-    {\tiny ecrecover} &  & & {\tiny call data sig} & $32B \times 16 = 512$ \\
-    {\tiny falconrecover} & & & {\tiny call data sig} & $666B \times 16 = 10656$ \\
-    & {\tiny total} & \textcolor{green}{$32$k} & {\tiny total} & \textcolor{green}{$13$k}\\
-    \hline
-    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
-    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
-    {\tiny mldsa} & {\tiny call data pk} & $\textcolor{red}{20512} \times 16 = 328 192$ & {\tiny call data sig} & $2420B \times 16 = 38 720$ \\
-    & {\tiny store pk} &  $\textcolor{red}{20512} \times 200 = 4 102 400$ & {\tiny copy pk} & $\textcolor{red}{20512} \times 100 \div 32 = 64100$\\
-    & {\tiny total} & \textcolor{green}{$4462$k} & {\tiny total} & \textcolor{green}{$106$k}\\
-    \hline
-  \end{tabular}
-\end{frame}
-
-\begin{frame}{On-chain data gas cost (estimated)}
-  \centering
-  \begin{tabular}{|c|lr|lr|}
-    \hline
-    & \multicolumn{2}{c|}{\textbf{Create Account}} & \multicolumn{2}{c|}{\textbf{Send Transaction}}\\
-    &  & Gas & & Gas\\
-    \hline
-    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
-    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
-    {\tiny falcon} & {\tiny call data pk} & $896B \times 16 = 14 336$ & {\tiny call data sig} & $666B \times 16 = 10656$ \\
-    & {\tiny store pk} & $896B \times 200 = 179 200$ & {\tiny copy pk} & $896B \times 100 \div 32 = 2 800$ \\
-    & {\tiny total} & \textcolor{green}{$226$k} & {\tiny total} & \textcolor{green}{$17$k}\\
-    \hline
-    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
-    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
-    {\tiny falconrecover} && & {\tiny call data sig} & $666B \times 16 = 10656$ \\
-    & {\tiny total} & \textcolor{green}{$32$k} & {\tiny total} & \textcolor{green}{$13$k}\\
-    \hline
-    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
-    {\tiny ecrecover} & & & {\tiny call data sig} & $32B \times 16 = 512$ \\
-    {\tiny mldsa} & {\tiny call data pk} & $1312B \times 16 = 20 992$ & {\tiny call data sig} & $2420B \times 16 = 38 720$ \\
-    & {\tiny store pk} &  $1312B \times 200 = 262 400$ & {\tiny copy pk} & $1312B \times 100 \div 32 = 4100$\\
-    & {\tiny total} & \textcolor{green}{$315$k} & {\tiny total} & \textcolor{green}{$46$k}\\
-    \hline
-  \end{tabular}
-\end{frame}
-
 \begin{frame}{Future of PQ accounts}
   \begin{itemize}
-    \item[\faClockO] Possible precompiles:
-    \begin{itemize}
-      \item \eiplink{8051} (MLDSA),
-      \item \eiplink{8052} (FALCON),
-      \item \eiplink{7885} (NTT),
-      \item SHAKE precompile,
-      \item Vectorized arithmetic precompile.
-    \end{itemize}
-    The remaining cost is data call/store/copy.
-    \pause
   % \def\u{0.24}% side of one 32B square in cm
   % \begin{tikzpicture}[x=\u cm, y=\u cm,
   %   ecdsa/.style={fill=blue!50, draw=blue!70, line width=0.2pt},
@@ -758,10 +690,50 @@
       \item[\faSquareO] Delegation (\eiplink{7702}) for spending from the EOA,
       \item[\faClockO] Deactivation of EOA (\eiplink{7851}),
       \item[\faClockO] Frame transaction (\eiplink{8141}) integration.
+      \pause
+      \item[\faClockO] Possible precompiles:
+      \begin{itemize}
+        \item \eiplink{8051} (MLDSA),
+        \item \eiplink{8052} (FALCON),
+        \item \eiplink{7885} (NTT),
+        \item Vectorized arithmetic precompile,
+        \item SHAKE precompile.
+      \end{itemize}
+      Verification as cheap as ECDSA \faSmileO\\
+      Remaining cost: data call/store/copy \faWarning
     \end{itemize}
   % \pause
   % \textcolor{green}{BONUS}: a NFT offered to the first to create a PQ account and sends some ETH to \texttt{zknox.eth} on Sepolia! \faSmileO
+\end{frame}
 
+\begin{frame}{On-chain data gas cost (estimation)}
+  \centering
+  \begin{tabular}{|c|l>{\raggedleft\arraybackslash}p{4cm}|l>{\raggedleft\arraybackslash}p{4.3cm}|}
+    \hline
+    Account & \multicolumn{2}{c|}{\textbf{Create Account}} & \multicolumn{2}{c|}{\textbf{Send Transaction}}\\
+    Mode &  & Gas & & Gas\\
+    \hline
+    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+    {\tiny ecrecover $\to$} & & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
+    \multirow{2}{*}{{\tiny falcon $\left.\begin{array}{l} \nearrow \\ \searrow \end{array}\right.$}} & {\tiny call data pk} & \only<1>{$1024B \times 16 = 16 384$}\only<2>{$896B \times 16 = 14 336$} & {\tiny call data sig} & $666B \times 16 = 10656$ \\
+    & {\tiny store pk} & \only<1>{$1024B \times 200 = 204 800$}\only<2>{$896B \times 200 = 179 200$} & {\tiny copy pk} & \only<1>{$1024B \times 100 \div 32 = 3 200$}\only<2>{$896B \times 100 \div 32 = 2 800$} \\
+    & {\tiny total} & \only<1>{\textcolor{green}{$254$k}}\only<2>{\textcolor{green}{$226$k}} & {\tiny total} & \textcolor{green}{$17$k}\\
+    \hline
+    & {\tiny create2} & $32000$ & & \\
+    {\tiny ecrecover $\to$} &  & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
+    {\tiny falconrecover $\to$} & & & {\tiny call data sig} & $1291B \times 16 = 20656$ \\
+    & {\tiny total} & \textcolor{green}{$32$k} & {\tiny total} & \textcolor{green}{$22$k}\\
+    \hline
+    & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+    {\tiny ecrecover $\to$} & & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
+    \multirow{2}{*}{{\tiny mldsa $\left.\begin{array}{l} \nearrow \\ \searrow \end{array}\right.$}} & {\tiny call data pk} & \only<1>{$\textcolor{red}{20512B} \times 16 = 328 192$}\only<2>{$1312B \times 16 = 20 992$} & {\tiny call data sig} & $2420B \times 16 = 38 720$ \\
+    & {\tiny store pk} & \only<1>{$\textcolor{red}{20512B} \times 200 = 4 102 400$}\only<2>{$1312B \times 200 = 262 400$} & {\tiny copy pk} & \only<1>{$\textcolor{red}{20512B} \times 100 \div 32 = 64100$}\only<2>{$1312B \times 100 \div 32 = 4100$}\\
+    & {\tiny total} & \only<1>{\textcolor{green}{$4462$k}}\only<2>{\textcolor{green}{$315$k}} & {\tiny total} & \only<1>{\textcolor{green}{$106$k}}\only<2>{\textcolor{green}{$46$k}}\\
+    \hline
+  \end{tabular}
+\end{frame}
+
+\begin{frame}
   \begin{center}
     \textcolor{yellow}{Thank you for your attention}\\
     \ \\
