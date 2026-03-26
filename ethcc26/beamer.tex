@@ -205,22 +205,18 @@
 
 \begin{frame}{Why post-quantum?}
   Security of Ethereum relies on \textbf{digital signatures}:
-  \begin{itemize}
-    \onslide<1->{
-      \item ECDSA: Elliptic Curve Digital Signature Algorithm.
-      \item Public key and signature are short (32B to 64B).
-      \item Fast to verify, secure, and trusted.
-      \item \textcolor{red}{A quantum computer breaks the security!}
-    }
-    \onslide<2->{
-      \item Other signatures resist against quantum algorithms.
-      \item Public key and signature much larger (thousands of bytes).
-      \item 2016: NIST starts a standardization process.
-      \item 2026: Three candidates for post-quantum secure signature.\\
+  \begin{itemize}[<+->]
+      \item ECDSA: Elliptic Curve Digital Signature Algorithm:\\
+      Small signatures: 65B.\\
+      Fast verification, secure, and trusted.\\
+      \textcolor{red}{A quantum computer breaks the security!}
+      \item Alternative signatures resist against quantum algorithms:\\
+      Public key and signature much larger (thousands of bytes).\\
+      2016: NIST starts a standardization process.\\
+      2026: Three candidates for post-quantum secure signature.\\
       \phantom{2026: }Many institutions already integrate PQ security.\\
-      \phantom{2026: }Ethereum announces a PQ roadmap\\
+      \phantom{2026: }Ethereum announced a PQ roadmap\\
       \phantom{2026: }(Consensus, Data and Execution Layers, see \link{https://strawmap.org}{strawmap.org}).
-    }
 \end{itemize}
 \end{frame}
 
@@ -397,10 +393,10 @@
 \begin{frame}{Hybrid verification}
   What is hybrid verification?
   \begin{itemize}
-    \item Verify ECDSA signature (Nowadays security and trust),
-    \item Verify PQ signature (security against a quantum computer).
+    \item Verify ECDSA signature (secure and trusted),
+    \item Verify PQ signature (secure against a quantum computer).
   \end{itemize}
-  $\Longrightarrow$ Nowadays trust and future quantum security.
+  $\Longrightarrow$ Nowadays trust and future security.
   \pause
 
   \begin{itemize}
