@@ -249,110 +249,88 @@
   \end{center}
 \end{frame}
 
-\begin{frame}{\eiplink{8051}: MLDSA}
-  Two precompiles:
-  \begin{itemize}
-    \item ML-DSA-NIST: using the hash function SHAKE256 (compliant to NIST)
-    \item ML-DSA-ETH: using the hash function KECCAK256 (efficient in Ethereum)
-  \end{itemize}
-  \pause 
-  Public key is expanded during verification into ($\mathbb F_{q^{256}}^{4\times 4}, bytes, \mathbb F_{q^{256}}^4$):
-  % \begin{center}
-  %   \begin{tikzpicture}[
-  %     pk/.style={draw=white, text=white, rounded corners, minimum width=1cm, minimum height=.5cm, align=center},
-  %     pkexp/.style={draw=white, fill=purple!40, text=white, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-  %     % verifbox/.style={draw, fill=purple!30, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-  %     % 4337box/.style={draw, fill=green!30, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-  %     % boolbox/.style={draw, minimum width=1cm, minimum height=.25cm, align=center},
-  %     % arrow/.style={thick, ->, >=Stealth}
-  %   ]
+\begin{frame}{EIPs for lattice-based signatures}
+  \begin{columns}[t]
+    \column{0.48\textwidth}
+    \textbf{\eiplink{8051}: MLDSA}\\[0.3em]
+    Two precompiles:
+    \begin{itemize}
+      \item ML-DSA-NIST: with SHAKE256,
+      \item ML-DSA-ETH: with KECCAK256.
+    \end{itemize}
+    \pause
+    PubKey expanded during verification into ($\mathbb F_{q^{256}}^{4\times 4}, bytes, \mathbb F_{q^{256}}^4$):
+    \begin{center}
+      \begin{tikzpicture}[scale=0.7]
+      \node (pk) at (0,0) {\small Public key};
+      \node [below=.01cm of pk] (pksize) {\small 1312B};
+      \node (A00) at (3,.6) {$\cdot$};
+      \node [right=.05cm of A00] (A01) {$\cdot$};
+      \node [right=.05cm of A01] (A02) {$\cdot$};
+      \node [right=.05cm of A02] (A03) {$\cdot$};
+      \node [below=.05cm of A00] (A10) {$\cdot$};
+      \node [right=.05cm of A10] (A11) {$\cdot$};
+      \node [right=.05cm of A11] (A12) {$\cdot$};
+      \node [right=.05cm of A12] (A13) {$\cdot$};
+      \node [below=.05cm of A10] (A20) {$\cdot$};
+      \node [right=.05cm of A20] (A21) {$\cdot$};
+      \node [right=.05cm of A21] (A22) {$\cdot$};
+      \node [right=.05cm of A22] (A23) {$\cdot$};
+      \node [below=.05cm of A20] (A30) {$\cdot$};
+      \node [right=.05cm of A30] (A31) {$\cdot$};
+      \node [right=.05cm of A31] (A32) {$\cdot$};
+      \node [right=.05cm of A32] (A33) {$\cdot$};
+      \node [below=.05cm of A33] (pkexpandedsize) {\small 20512B};
+      \draw[->] (pk) -- (A00) node[above, midway, sloped]{{\tiny PRNG}} ;
+      \draw[->] (pk) -- (A01);
+      \draw[->] (pk) -- (A02);
+      \draw[->] (pk) -- (A03);
+      \draw[->] (pk) -- (A10);
+      \draw[->] (pk) -- (A11);
+      \draw[->] (pk) -- (A12);
+      \draw[->] (pk) -- (A13);
+      \draw[->] (pk) -- (A20);
+      \draw[->] (pk) -- (A21);
+      \draw[->] (pk) -- (A22);
+      \draw[->] (pk) -- (A23);
+      \draw[->] (pk) -- (A30);
+      \draw[->] (pk) -- (A31);
+      \draw[->] (pk) -- (A32);
+      \draw[->] (pk) -- (A33);
+      \end{tikzpicture}
+    \end{center}
+    \pause
+    Verifier (after expansion):
+    \begin{itemize}
+      \item \textbf{9} SHA256 (or \textbf{5} Keccak256),
+      \item \textbf{8} NTTs (256 length polynomials).
+    \end{itemize}
+    \pause
 
-  %   % Notes
-  %   \onslide<1->{\node[pk] (pk) {Public key\\1312B};}
-  %   \onslide<2->{\node[pkexp, right=4cm of pk] (pkexp) {Expanded public key ($\mathbb F_q^{4\times 4}, bytes, \mathbb F_q^4$)\\\textbf{20512B}};}
-  %   \onslide<2->{\draw[->, white](pk) -- (pkexp) node[midway, above]{using hash};}
-  %   \end{tikzpicture}
-  % \end{center}
+    \column{0.48\textwidth}
+    \textbf{\eiplink{8052}: FNDSA}\\[0.3em]
+    Two precompiles (hash and sign):
+    \begin{itemize}
+      \item HashToPoint (NIST or variants),
+      \item Core verification (NTTs).
+    \end{itemize}
+    \pause
+    PubKey variation:
+    \begin{itemize}
+      \item Move to the NTT domain
+      \item 896B $\to$ 1024B
+      \item Remove one NTT for verifier
+    \end{itemize}
+    \pause
 
-  \begin{center}
-    \begin{tikzpicture}
-    % Notes
-    \node (pk) at (0,0) {Public key};
-    \node [below=.01cm of pk] (pksize) {1312B};
-    \onslide<2->{
-    \node (A00) at (4,.8) {$\cdot$};
-    }
-    \onslide<3->{
-    \node [right=.1cm of A00] (A01) {$\cdot$};
-    }
-    \onslide<4->{
-    \node [right=.1cm of A01] (A02) {$\cdot$};
-    }
-    \onslide<5->{
-    \node [right=.1cm of A02] (A03) {$\cdot$};
-    \node [below=.1cm of A00] (A10) {$\cdot$};
-    \node [right=.1cm of A10] (A11) {$\cdot$};
-    \node [right=.1cm of A11] (A12) {$\cdot$};
-    \node [right=.1cm of A12] (A13) {$\cdot$};
-    \node [below=.1cm of A10] (A20) {$\cdot$};
-    \node [right=.1cm of A20] (A21) {$\cdot$};
-    \node [right=.1cm of A21] (A22) {$\cdot$};
-    \node [right=.1cm of A22] (A23) {$\cdot$};
-    \node [below=.1cm of A20] (A30) {$\cdot$};
-    \node [right=.1cm of A30] (A31) {$\cdot$};
-    \node [right=.1cm of A31] (A32) {$\cdot$};
-    \node [right=.1cm of A32] (A33) {$\cdot$};
-    \node [below=.05cm of A33] (pkexpandedsize) {20512B};
-    }
-    \onslide<2->{
-    \draw[->] (pk) -- (A00) node[above, midway, sloped]{{\tiny PRNG}} ;
-    }
-    \onslide<3->{
-    \draw[->] (pk) -- (A01);
-    }
-    \onslide<4->{
-    \draw[->] (pk) -- (A02);
-    }
-    \onslide<5->{
-    \draw[->] (pk) -- (A03);
-    \draw[->] (pk) -- (A10);
-    \draw[->] (pk) -- (A11);
-    \draw[->] (pk) -- (A12);
-    \draw[->] (pk) -- (A13);
-    \draw[->] (pk) -- (A20);
-    \draw[->] (pk) -- (A21);
-    \draw[->] (pk) -- (A22);
-    \draw[->] (pk) -- (A23);
-    \draw[->] (pk) -- (A30);
-    \draw[->] (pk) -- (A31);
-    \draw[->] (pk) -- (A32);
-    \draw[->] (pk) -- (A33);
-    }
-    \end{tikzpicture}
-  \end{center}
+    \vspace{2.12cm} 
 
-  \onslide<6->{Verifier cost: \textbf 9 SHA256 (or \textbf 5 Keccak256) and \textbf{9} NTTs.}
-\end{frame}
-
-\begin{frame}{\eiplink{8052}: FNDSA}
-  Two precompiles (separation between hash and sign):
-  \begin{itemize}
-    \item HashToPoint: hashing a message to a polynomial, can be instantiated with different hash functions,
-    \item Falcon core verification: verify the shortness of the signature (include NTTs).
-  \end{itemize}
-  \pause
-  Allows different versions of hash functions:
-  \begin{itemize}
-    \item SHAKE-based: NIST-compliant,
-    \item KeccakPRNG-based: gas-efficient.
-  \end{itemize}
-  \pause
-  Reducing the verifier cost:
-  \begin{itemize}
-    \item Public key in the NTT domain
-    \item 896B $\to$ 1024B
-    \item Remove one NTT for the verifier
-  \end{itemize}
+    Verifier (in this formate):
+    \begin{itemize}
+      \item 35 SHA256 (or Keccak, Poseidon),
+      \item 2 NTTs (512 length polynomials).
+    \end{itemize}
+  \end{columns}
 \end{frame}
 
 \begin{frame}{Account Abstraction}
@@ -441,8 +419,7 @@
   \pause
 
   \begin{itemize}
-    \item Modular: interface verifiers are provided with the account factory
-    \item Possible to use two PQ verifiers {\tiny if you don't know which one to choose \faSmileO},
+    \item Modular: easy to add verifiers to the account factory,
     \item Practical gas costs (without precompile):
     \begin{itemize}
       \item ECDSA + MLDSA: 8.2M gas,
