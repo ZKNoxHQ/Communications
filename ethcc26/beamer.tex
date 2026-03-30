@@ -258,7 +258,6 @@
       \item ML-DSA-NIST: with SHAKE256,
       \item ML-DSA-ETH: with KECCAK256.
     \end{itemize}
-    \pause
     PubKey expanded during verification into ($\mathbb F_{q^{256}}^{4\times 4}, bytes, \mathbb F_{q^{256}}^4$):
     \begin{center}
       \begin{tikzpicture}[scale=0.7]
@@ -299,7 +298,6 @@
       \draw[->] (pk) -- (A33);
       \end{tikzpicture}
     \end{center}
-    \pause
     Verifier (after expansion):
     \begin{itemize}
       \item \textbf{9} SHA256 (or \textbf{5} Keccak256),
@@ -314,14 +312,12 @@
       \item HashToPoint (NIST or variants),
       \item Core verification (NTTs).
     \end{itemize}
-    \pause
     PubKey variation:
     \begin{itemize}
       \item Move to the NTT domain
       \item 896B $\to$ 1024B
       \item Remove one NTT for verifier
     \end{itemize}
-    \pause
 
     \vspace{2.12cm} 
 
@@ -331,103 +327,6 @@
       \item 2 NTTs (512 length polynomials).
     \end{itemize}
   \end{columns}
-\end{frame}
-
-\begin{frame}{Account Abstraction}
-  \begin{center}
-\begin{tikzpicture}[
-  note/.style={draw=white, text=white, rounded corners, minimum width=3cm, minimum height=1cm, align=center},
-  sigbox/.style={draw=white, fill=white, text=black, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-  verifbox/.style={draw=white, fill=white, text=black, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-  4337box/.style={draw=white, fill=green, text=black, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
-  boolbox/.style={draw=white, text=white, minimum width=1cm, minimum height=.25cm, align=center},
-  arrow/.style={thick, ->, >=Stealth, white}
-]
-
-% Notes
-\onslide<1-4>{\node[note] (alice) {Alice \\ 1 ETH};}
-\onslide<1-4>{\node[note, right=4cm of alice] (bob) {Bob \\ 0 ETH};}
-\onslide<5->{\node[note] (alice) {Alice \\ \textcolor{green}{0} ETH};}
-\onslide<5->{\node[note, right=4cm of alice] (bob) {Bob \\ \textcolor{green}{1} ETH};}
-\onslide<2->{\draw[->, white](alice) -- (bob) node[midway, above]{Send 1 ETH} node[midway,below]{\texttt{TxHash}: \texttt{0xaf32..ec39}};}
-\onslide<3->{\node[sigbox, below=0.1cm of alice] (sig) {signature of TxHash};}
-\onslide<4-5>{\node[verifbox, below=0.1cm of bob] (verif) {Verification contract};}
-\onslide<5->{\node[boolbox, right=0.5cm of verif] (bool) {True};}
-\onslide<5->{\draw[->, white](verif) --  (bool);}
-\onslide<6>{\node[4337box, below=0.1cm of bob] (verif) {4337 contract};}
-\onslide<7->{\node[4337box, below=0.1cm of bob] (verif) {4337 \textcolor{red}{PQ} verification};}
-\end{tikzpicture}
-\end{center}
-
-\begin{itemize}
-  \onslide<3->{\item Execution layer: ECDSA signature (not resistant to quantum attacks)}
-   
-  \onslide<6->{\item \textcolor{green}{Account abstraction (4337): enables custom contract for transactions.}}
-
-  \onslide<7->{\item \textcolor{green}{This work: 4337 contract with \textcolor{red}{quantum-secure} signature verification.}}
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Hybrid verification}
-  What is hybrid verification?
-  \begin{itemize}
-    \item Verify ECDSA signature (secure and trusted),
-    \item Verify PQ signature (secure against a quantum computer).
-  \end{itemize}
-  $\Longrightarrow$ Nowadays trust and future security.
-  \pause
-
-  \begin{itemize}
-    \item Pre-quantum:
-
-    \begin{tabular}{cc}
-      ECDSA-k1 & ECDSA-r1\\
-      \includegraphics[width=2cm]{eth.png}
-      &
-      \includegraphics[width=2cm]{passkey.png}
-      \\
-    \end{tabular}
-    \pause
-    \item Post-quantum:
-    \begin{itemize}
-      \item MLDSA \includegraphics[height=.8em]{nist.jpg}
-      \item MLDSA \includegraphics[height=.8em]{eth.png}
-      \item FALCON \includegraphics[height=.8em]{nist.jpg}
-      \item FALCON \includegraphics[height=.8em]{eth.png}
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Smart Account Contract}
-    \begin{algorithmic}
-      \STATE \texttt{SigContract1 = SigVerifier(LogicAddress1)}
-      \hfill \Comment{\textcolor{gray}{pre-quantum signature verifier}}
-      \IF {\texttt{not(SigContract1.verify(PubKey1, digest, Sig1))}}
-      \RETURN \texttt{\textcolor{red}{False}}
-      \ENDIF
-      \pause
-
-      \STATE \texttt{SigContract2 = SigVerifier(LogicAddress2)}
-      \hfill \Comment{\textcolor{gray}{post-quantum signature verifier}}
-      \IF {\texttt{not(SigContract2.verify(PubKey2, digest, Sig2))}}
-      \RETURN \texttt{\textcolor{red}{False}}
-      \ENDIF
-      \pause
-
-      \RETURN \texttt{\textcolor{green}{True}}
-  \end{algorithmic}
-  \pause
-
-  \begin{itemize}
-    \item Modular: easy to add verifiers to the account factory,
-    \item Practical gas costs (without precompile):
-    \begin{itemize}
-      \item ECDSA + MLDSA: 8.2M gas,
-      \item ECDSA + FALCON: 3.8M gas,
-      \item ECDSA + MLDSA \includegraphics[height=.8em]{eth.png}: 5.0M gas,
-      \item ECDSA + FALCON \includegraphics[height=.8em]{eth.png}: 1.6M gas.
-    \end{itemize}
-  \end{itemize}
 \end{frame}
 
 \begin{frame}{PQ-SLIP: how to handle PQ keys}
@@ -522,11 +421,105 @@
 \node[font=\scriptsize\itshape, right=0.15cm of pqslip, text=pqRed, align=left]
   {Adds keywords for\\[-1pt]quantum-resistant algorithms};
 }
-
 \end{tikzpicture}
-
 \end{frame}
 
+\begin{frame}{Account Abstraction}
+  \begin{center}
+\begin{tikzpicture}[
+  note/.style={draw=white, text=white, rounded corners, minimum width=3cm, minimum height=1cm, align=center},
+  sigbox/.style={draw=white, fill=white, text=black, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
+  verifbox/.style={draw=white, fill=white, text=black, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
+  4337box/.style={draw=white, fill=green, text=black, rounded corners, minimum width=2cm, minimum height=.5cm, align=center},
+  boolbox/.style={draw=white, text=white, minimum width=1cm, minimum height=.25cm, align=center},
+  arrow/.style={thick, ->, >=Stealth, white}
+]
+
+% Notes
+\onslide<1>{\node[note] (alice) {Alice \\ 1 ETH};}
+\onslide<1>{\node[note, right=4cm of alice] (bob) {Bob \\ 0 ETH};}
+\onslide<2->{\node[note] (alice) {Alice \\ \textcolor{green}{0} ETH};}
+\onslide<2->{\node[note, right=4cm of alice] (bob) {Bob \\ \textcolor{green}{1} ETH};}
+\onslide<1->{\draw[->, white](alice) -- (bob) node[midway, above]{Send 1 ETH} node[midway,below]{\texttt{TxHash}: \texttt{0xaf32..ec39}};}
+\onslide<1->{\node[sigbox, below=0.1cm of alice] (sig) {signature of TxHash};}
+\onslide<1-2>{\node[verifbox, below=0.1cm of bob] (verif) {Verification contract};}
+\onslide<2->{\node[boolbox, right=0.5cm of verif] (bool) {True};}
+\onslide<2->{\draw[->, white](verif) --  (bool);}
+\onslide<3>{\node[4337box, below=0.1cm of bob] (verif) {4337 contract};}
+\onslide<4->{\node[4337box, below=0.1cm of bob] (verif) {4337 \textcolor{red}{PQ} verification};}
+\end{tikzpicture}
+\end{center}
+
+\begin{itemize}
+  \onslide<1->{\item Execution layer: ECDSA signature (not resistant to quantum attacks)}
+   
+  \onslide<3->{\item \textcolor{green}{Account abstraction (4337): enables custom contract for transactions.}}
+
+  \onslide<4->{\item \textcolor{green}{This work: 4337 contract with \textcolor{red}{quantum-secure} signature verification.}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Hybrid verification}
+  What is hybrid verification?
+  \begin{itemize}
+    \item Verify ECDSA signature (secure and trusted),
+    \item Verify PQ signature (secure against a quantum computer).
+  \end{itemize}
+  $\Longrightarrow$ Nowadays trust and future security.
+  \pause
+
+  \begin{itemize}
+    \item Pre-quantum:
+
+    \begin{tabular}{cc}
+      ECDSA-k1 & ECDSA-r1\\
+      \includegraphics[width=2cm]{eth.png}
+      &
+      \includegraphics[width=2cm]{passkey.png}
+      \\
+    \end{tabular}
+    \pause
+    \item Post-quantum:
+    \begin{itemize}
+      \item MLDSA \includegraphics[height=.8em]{nist.jpg}
+      \item MLDSA \includegraphics[height=.8em]{eth.png}
+      \item FALCON \includegraphics[height=.8em]{nist.jpg}
+      \item FALCON \includegraphics[height=.8em]{eth.png}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Smart Account Contract}
+    \begin{algorithmic}
+      \STATE \texttt{SigContract1 = SigVerifier(LogicAddress1)}
+      \hfill \Comment{\textcolor{gray}{pre-quantum signature verifier}}
+      \IF {\texttt{not(SigContract1.verify(PubKey1, digest, Sig1))}}
+      \RETURN \texttt{\textcolor{red}{False}}
+      \ENDIF
+      \pause
+
+      \STATE \texttt{SigContract2 = SigVerifier(LogicAddress2)}
+      \hfill \Comment{\textcolor{gray}{post-quantum signature verifier}}
+      \IF {\texttt{not(SigContract2.verify(PubKey2, digest, Sig2))}}
+      \RETURN \texttt{\textcolor{red}{False}}
+      \ENDIF
+      \pause
+
+      \RETURN \texttt{\textcolor{green}{True}}
+  \end{algorithmic}
+  \pause
+
+  \begin{itemize}
+    \item Modular: easy to add verifiers to the account factory,
+    \item Practical gas costs (without precompile):
+    \begin{itemize}
+      \item ECDSA + MLDSA: 8.2M gas,
+      \item ECDSA + FALCON: 3.8M gas,
+      \item ECDSA + MLDSA \includegraphics[height=.8em]{eth.png}: 5.0M gas,
+      \item ECDSA + FALCON \includegraphics[height=.8em]{eth.png}: 1.6M gas.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
 
 \begin{frame}{Demonstration: what do we show here?}
   \begin{description}[<+->]
@@ -577,10 +570,8 @@
       \end{tabular}
     \end{center}
     \item[\faWarning] This does not include on-chain data gas cost!
-    \pause
     \item[\faSquareO] Production: MLDSA-65 for higher security level
     \item[\faSquareO] Production: audit of the code
-    \pause
     \item[\faCheckSquareO] Hardware: MLDSA available (in hybrid)
     \item[\faSquareO] Hardware: FALCON requires a lot of memory
   \end{itemize}
@@ -681,10 +672,10 @@
 
 \begin{frame}{On-chain data gas cost (estimation)}
   \centering
-  \begin{tabular}{|c|l>{\raggedleft\arraybackslash}p{4cm}|l>{\raggedleft\arraybackslash}p{4.3cm}|}
+  \begin{tabular}{|r|l>{\raggedleft\arraybackslash}p{4cm}|l>{\raggedleft\arraybackslash}p{4.3cm}|}
     \hline
-    Account & \multicolumn{2}{c|}{\textbf{Create Account}} & \multicolumn{2}{c|}{\textbf{Send Transaction}}\\
-    Mode &  & Gas & & Gas\\
+    \multicolumn{1}{|c|}{Account} & \multicolumn{2}{c|}{\textbf{Create Account}} & \multicolumn{2}{c|}{\textbf{Send Transaction}}\\
+    \multicolumn{1}{|c|}{Mode} &  & Gas & & Gas\\
     \hline
     & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
     {\tiny ecrecover $\to$} & & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
