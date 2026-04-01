@@ -176,13 +176,13 @@
 \begin{minipage}{.33\linewidth}
    Expertise and innovation to every challenge on the whole security chain:
    \begin{itemize}
-   \item user end\\ (secure enclaves, hardware wallets),
+   \item user end\\ (secure enclaves, \textcolor{red}{hardware wallets}),
    \item back end\\ (TEE, HSMs),
-   \item on-chain\\ (smart contracts).
+   \item on-chain\\ (\textcolor{red}{smart contracts}).
    \end{itemize}
  
   \vspace{1em}
-
+   \textcolor{red}{Execution layer is protected from quantum computer now!}\\
   \link{https://zknox.com/}{zknox.com}
 
 \end{minipage}
@@ -204,20 +204,21 @@
 \end{frame}
 
 \begin{frame}{Why post-quantum?}
-  Security of Ethereum relies on \textbf{digital signatures}:
-  \begin{itemize}[<+->]
-      \item ECDSA: Elliptic Curve Digital Signature Algorithm:\\
-      Small signatures: 65B.\\
-      Fast verification, secure, and trusted.\\
-      \textcolor{red}{A quantum computer breaks the security!}
-      \item Alternative signatures resist against quantum algorithms:\\
-      Public key and signature much larger (thousands of bytes).\\
-      2016: NIST starts a standardization process.\\
-      2026: Three candidates for post-quantum secure signature.\\
-      \phantom{2026: }Many institutions already integrate PQ security.\\
-      \phantom{2026: }Ethereum announced a PQ roadmap\\
-      \phantom{2026: }(Consensus, Data and Execution Layers, see \link{https://strawmap.org}{strawmap.org}).
-\end{itemize}
+    Security of Ethereum relies on \textbf{digital signatures}:
+    \begin{itemize}[<+->]
+        \item ECDSA: Elliptic Curve Digital Signature Algorithm:\\
+        Small signatures: 65B.\\
+        Fast verification, secure, and trusted.\\
+        \textcolor{red}{A quantum computer breaks the security!}
+        \includegraphics[width=.6\linewidth]{arxiv.png}
+        \item Alternative signatures resist against quantum algorithms:\\
+        Public key and signature much larger (thousands of bytes).\\
+        2016: NIST starts a standardization process.\\
+        2026: Three candidates for post-quantum secure signature.\\
+        \phantom{2026: }Many institutions already integrate PQ security.\\
+        \phantom{2026: }Ethereum announced a PQ roadmap\\
+        \phantom{2026: }(Consensus, Data and Execution Layers, see \link{https://strawmap.org}{strawmap.org}).
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{Post-quantum signature candidates}
@@ -236,12 +237,12 @@
       Gas cost verification & \multirow{2}{*}{3.8M} & \multirow{2}{*}{8.0M} & \multirow{2}{*}{--}\\
       without precompile & & &\\
       \hline
-      Hardware  & \uncover<2->{\textcolor{orange}{requires a lot} & \textcolor{green}{yes, see later} & \multirow{2}{*}{--}}\\
-      implementation & \uncover<2->{\textcolor{orange}{of RAM}  & \textcolor{green}{in this talk} &}\\
+      Hardware  & \uncover<2->{\textcolor{orange}{more than} & \textcolor{green}{yes, see later} & \multirow{2}{*}{--}}\\
+      implementation & \uncover<2->{\textcolor{orange}{40kB}  & \textcolor{green}{in this talk} &}\\
       \hline
       Aggregation & \uncover<2->{\link{https://eprint.iacr.org/2024/311}{Possible} & no & no}\\
       \hline
-      TSS & \uncover<2->{okay for small $n$ & yes & no}\\
+      TSS & \uncover<2->{naive & yes & no}\\
       \hline
       PK recovery & \uncover<2->{\textcolor{green}{yes} & no & no}\\
       \hline
@@ -356,15 +357,12 @@
 \node[box, fill=slipGray!20] (seed) at (0,-5)
   {Master Seed \\ \scriptsize 512 bits};
 
-  \onslide<2->{
 % C1: BIP32 side-branch below Seed
 \node[box, fill=ethPurple!20] (bip32) at (6, -5)
   {\textcolor{ethPurple}{BIP32} \\
    \scriptsize secp256k1 only \\[-1pt]
    \scriptsize bitcoin, ethereum};
-  }
 
-  \onslide<3->{
 % C2: SLIP-0010  (bottom-right)
 \node[box, fill=solGreen!20] (slip) at (6, -2.5)
   {\textcolor{slipGray}{\textbf{SLIP-0010}} \\
@@ -372,15 +370,12 @@
    \scriptsize + BbJj\\[-1pt]
    \scriptsize + ed25519\\[-1pt]
    \scriptsize + X25519};
-  }
 
-  \onslide<4->{
 % C3: PQSLIP  (top-right)
 \node[box, fill=pqRed!12, draw=pqRed, line width=1.4pt] (pqslip) at (6.0, 0)
   {\textcolor{pqRed}{\textbf{PQ-SLIP}} \\
    \scriptsize + \textcolor{pqRed}{\textbf{ML-DSA}} (Dilithium) \\[-1pt]
    \scriptsize + \textcolor{pqRed}{\textbf{FN-DSA}} (Falcon)};
-  }
 
 % A -> B (mid)
 \draw[arrow] (entropy.south) -- (bip39.north);
@@ -388,39 +383,27 @@
 % B -> C (down)
 \draw[arrow] (bip39.south) -- (seed.north);
 
-\onslide<2->{
 % C -> C1 (right down)
 \draw[arrow] (seed.east) -- (bip32.west)
   node[lbl, above=2pt, sloped] {\scriptsize HMAC-SHA512};
-}
 
-\onslide<3->{
 % C -> C2 (right mid)
 \draw[arrow] (seed.east) -- (slip.west)
   node[lbl, above=2pt, sloped] {\scriptsize HMAC-SHA512};
-}
 
-\onslide<4->{
 % C -> C3 (right up)
 \draw[arrow] (seed.east) -- (pqslip.west)
   node[lbl, above=2pt, sloped] {\scriptsize HMAC-SHA512};
-}
 
 % Labels
-\onslide<2->{
 \node[font=\scriptsize, right=0.15cm of bip32, text=ethPurple, align=left]
   {One fixed keyword\\[-1pt]for secp256k1};
-}
 
-\onslide<3->{
 \node[font=\scriptsize, right=0.15cm of slip, text=solGreen, align=left]
   {Adds keywords for other\\[-1pt]elliptic curve algorithms};
-}
 
-\onslide<4->{
 \node[font=\scriptsize\itshape, right=0.15cm of pqslip, text=pqRed, align=left]
   {Adds keywords for\\[-1pt]quantum-resistant algorithms};
-}
 \end{tikzpicture}
 \end{frame}
 
@@ -442,7 +425,7 @@
 \onslide<2->{\node[note, right=4cm of alice] (bob) {Bob \\ \textcolor{green}{1} ETH};}
 \onslide<1->{\draw[->, white](alice) -- (bob) node[midway, above]{Send 1 ETH} node[midway,below]{\texttt{TxHash}: \texttt{0xaf32..ec39}};}
 \onslide<1->{\node[sigbox, below=0.1cm of alice] (sig) {signature of TxHash};}
-\onslide<1-2>{\node[verifbox, below=0.1cm of bob] (verif) {Verification contract};}
+\onslide<1-2>{\node[verifbox, below=0.1cm of bob] (verif) {Consensus verification};}
 \onslide<2->{\node[boolbox, right=0.5cm of verif] (bool) {True};}
 \onslide<2->{\draw[->, white](verif) --  (bool);}
 \onslide<3>{\node[4337box, below=0.1cm of bob] (verif) {4337 contract};}
@@ -466,7 +449,6 @@
     \item Verify PQ signature (secure against a quantum computer).
   \end{itemize}
   $\Longrightarrow$ Nowadays trust and future security.
-  \pause
 
   \begin{itemize}
     \item Pre-quantum:
@@ -478,7 +460,6 @@
       \includegraphics[width=2cm]{passkey.png}
       \\
     \end{tabular}
-    \pause
     \item Post-quantum:
     \begin{itemize}
       \item MLDSA \includegraphics[height=.8em]{nist.jpg}
@@ -489,55 +470,55 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Smart Account Contract}
-    \begin{algorithmic}
-      \STATE \texttt{SigContract1 = SigVerifier(LogicAddress1)}
-      \hfill \Comment{\textcolor{gray}{pre-quantum signature verifier}}
-      \IF {\texttt{not(SigContract1.verify(PubKey1, digest, Sig1))}}
-      \RETURN \texttt{\textcolor{red}{False}}
-      \ENDIF
-      \pause
+% \begin{frame}{Smart Account Contract}
+%     \begin{algorithmic}
+%       \STATE \texttt{SigContract1 = SigVerifier(LogicAddress1)}
+%       \hfill \Comment{\textcolor{gray}{pre-quantum signature verifier}}
+%       \IF {\texttt{not(SigContract1.verify(PubKey1, digest, Sig1))}}
+%       \RETURN \texttt{\textcolor{red}{False}}
+%       \ENDIF
+%       \pause
 
-      \STATE \texttt{SigContract2 = SigVerifier(LogicAddress2)}
-      \hfill \Comment{\textcolor{gray}{post-quantum signature verifier}}
-      \IF {\texttt{not(SigContract2.verify(PubKey2, digest, Sig2))}}
-      \RETURN \texttt{\textcolor{red}{False}}
-      \ENDIF
-      \pause
+%       \STATE \texttt{SigContract2 = SigVerifier(LogicAddress2)}
+%       \hfill \Comment{\textcolor{gray}{post-quantum signature verifier}}
+%       \IF {\texttt{not(SigContract2.verify(PubKey2, digest, Sig2))}}
+%       \RETURN \texttt{\textcolor{red}{False}}
+%       \ENDIF
+%       \pause
 
-      \RETURN \texttt{\textcolor{green}{True}}
-  \end{algorithmic}
-  \pause
+%       \RETURN \texttt{\textcolor{green}{True}}
+%   \end{algorithmic}
+%   \pause
 
-  \begin{itemize}
-    \item Modular: easy to add verifiers to the account factory,
-    \item Practical gas costs (without precompile):
-    \begin{itemize}
-      \item ECDSA + MLDSA: 8.2M gas,
-      \item ECDSA + FALCON: 3.8M gas,
-      \item ECDSA + MLDSA \includegraphics[height=.8em]{eth.png}: 5.0M gas,
-      \item ECDSA + FALCON \includegraphics[height=.8em]{eth.png}: 1.6M gas.
-    \end{itemize}
-  \end{itemize}
-\end{frame}
+%   \begin{itemize}
+%     \item Modular: easy to add verifiers to the account factory,
+%     \item Practical gas costs (without precompile):
+%     \begin{itemize}
+%       \item ECDSA + MLDSA: 8.2M gas,
+%       \item ECDSA + FALCON: 3.8M gas,
+%       \item ECDSA + MLDSA \includegraphics[height=.8em]{eth.png}: 5.0M gas,
+%       \item ECDSA + FALCON \includegraphics[height=.8em]{eth.png}: 1.6M gas.
+%     \end{itemize}
+%   \end{itemize}
+% \end{frame}
 
 \begin{frame}{Demonstration: what do we show here?}
   \begin{description}[<+->]
     \item [Step 1.] Create Account
     \begin{itemize}[<0->]
       \item \textcolor{gray}{Requires an EOA that is already funded},
-      \item Derive pre-quantum and post-quantum seed,~\onslide<3->{\textcolor{red}{HW or SW}}
-      \item Pre-quantum key generation: $(\mathbf{sk}_1,\mathbf{pk}_1)$,~\onslide<3->{\textcolor{red}{HW or SW}}\\
-      Post-quantum key generation: $(\mathbf{sk}_2,\mathbf{pk}_2)$,~\onslide<3->{\textcolor{red}{HW or SW}}
+      \item Derive pre-quantum and post-quantum seed,
+      \item Pre-quantum key generation: $(\mathbf{sk}_1,\mathbf{pk}_1)$,\\
+      Post-quantum key generation: $(\mathbf{sk}_2,\mathbf{pk}_2)$,
       \item \emph{The account is created} as a 4337 smart contract storing $\mathbf{pk}_1$ and $\mathbf{pk}_2$.
     \end{itemize}
     \item [Step 2.] Send Transaction
     \begin{itemize}[<0->]
       \item \textcolor{gray}{Does not require an EOA anymore},
       \item \textcolor{gray}{The freshly created account needs to be funded},
-      \item Compute the \texttt{UserOpHash} to be signed,~\onslide<4->{\textcolor{green}{HW or SW (clear signing)}}
-      \item Sign it with a pre-quantum scheme using $\mathbf{sk}_1$,~\onslide<3->{\textcolor{red}{HW or SW}}\\
-      Sign it with a post-quantum scheme using $\mathbf{sk}_2$,~\onslide<3->{\textcolor{red}{HW or SW}}
+      \item Compute the \texttt{UserOpHash} to be signed,
+      \item Sign it with a pre-quantum scheme using $\mathbf{sk}_1$,\\
+      Sign it with a post-quantum scheme using $\mathbf{sk}_2$,
       \item \emph{A transaction is spent} from the 4337 account if:
       \begin{itemize}
         \item the pre-quantum signature is valid w.r.t~$\mathbf{pk}_1$ stored in the contract,
@@ -546,7 +527,7 @@
     \end{itemize}
   \end{description}
   \begin{center}
-    \onslide<5->{
+    \onslide<3->{
       \textbf{\link{https://pq4337.netlify.app/}{pq4337.netlify.app}}
     }
   \end{center}
@@ -555,26 +536,26 @@
 \begin{frame}{Conclusion and perspectives}
   Smart accounts with post-quantum security are already available!
   \begin{itemize}
-    \item[\faCheckSquareO] Experimentation with MLDSA and FALCON:
+    \item[\faCheckSquareO] Experimentation with MLDSA and FALCON {\tiny (at ETH price of today)}:
     \begin{center}
       \begin{tabular}{|l|c|c|}
         \hline
         \textbf{Signatures} & \textbf{Create Account} & \textbf{Send Transaction}\\
         \hline
-        \textbf{ECDSA + MLDSA} & \multirow{2}{*}{5.7M gas} & 8.2M gas\\
-        \textbf{ECDSA + MLDSA}\includegraphics[height=.8em]{eth.png} & & 5.0M gas\\
+        \textbf{ECDSA + MLDSA} & \multirow{2}{*}{5.7M gas {\tiny (\$5.50)}} & 8.2M gas {\tiny (\$7.90)}\\
+        \textbf{ECDSA + MLDSA}\includegraphics[height=.8em]{eth.png} & & 5.0M gas {\tiny (\$4.80)}\\
         \hline
-        \textbf{ECDSA + FALCON} & \multirow{2}{*}{1.0M gas} & 3.8M gas\\
-        \textbf{ECDSA + FALCON}\includegraphics[height=.8em]{eth.png} &  & 1.6M gas\\
+        \textbf{ECDSA + FALCON} & \multirow{2}{*}{1.0M gas {\tiny (\$1.00)}} & 3.8M gas {\tiny (\$3.60)}\\
+        \textbf{ECDSA + FALCON}\includegraphics[height=.8em]{eth.png} &  & 1.6M gas {\tiny (\$1.50)}\\
         \hline
       \end{tabular}
     \end{center}
-    \item[\faWarning] This does not include on-chain data gas cost!
     \item[\faSquareO] Production: MLDSA-65 for higher security level
     \item[\faSquareO] Production: audit of the code
-    \item[\faCheckSquareO] Hardware: MLDSA available (in hybrid)
-    \item[\faSquareO] Hardware: FALCON requires a lot of memory
+    \item[\faCheckSquareO] Hardware: MLDSA, first implementation fully running in secure element
+    \item[\faSquareO] Hardware: FALCON reaches the 40kB limit.
   \end{itemize}
+  \textcolor{red}{Our solution is expensive. We need precompiles!}
 \end{frame}
 
 \begin{frame}{Future of PQ accounts}
@@ -654,23 +635,47 @@
       \item[\faSquareO] Delegation (\eiplink{7702}) for spending from the EOA,
       \item[\faClockO] Deactivation of EOA (\eiplink{7851}),
       \item[\faClockO] Frame transaction (\eiplink{8141}) integration.
-      \pause
-      \item[\faClockO] Possible precompiles:
+      \item[\faClockO] Specific precompiles:
       \begin{itemize}
-        \item \eiplink{8051} (MLDSA),
-        \item \eiplink{8052} (FALCON),
-        \item \eiplink{7885} (NTT),
-        \item Vectorized arithmetic precompile,
-        \item SHAKE precompile.
+        \item \eiplink{8051} (MLDSA): around 4.5k gas,
+        \item \eiplink{8052} (FALCON): around 3k gas.
       \end{itemize}
-      Verification as cheap as ECDSA \faSmileO\\
+      \item[\faClockO] Generic precompile (NVMPy): vectorized maths arithmetic.\\
+      Ongoing work with Vitalik: estimated full falcon around 50k gas\\ 
       Remaining cost: data call/store/copy \faWarning
     \end{itemize}
   % \pause
   % \textcolor{green}{BONUS}: a NFT offered to the first to create a PQ account and sends some ETH to \texttt{zknox.eth} on Sepolia! \faSmileO
 \end{frame}
 
-\begin{frame}{On-chain data gas cost (estimation)}
+% \begin{frame}{On-chain data gas cost (estimation)}
+%   \centering
+%   \begin{tabular}{|r|l>{\raggedleft\arraybackslash}p{4cm}|l>{\raggedleft\arraybackslash}p{4.3cm}|}
+%     \hline
+%     \multicolumn{1}{|c|}{Account} & \multicolumn{2}{c|}{\textbf{Create Account}} & \multicolumn{2}{c|}{\textbf{Send Transaction}}\\
+%     \multicolumn{1}{|c|}{Mode} &  & Gas & & Gas\\
+%     \hline
+%     & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+%     {\tiny ecrecover $\to$} & & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
+%     \multirow{2}{*}{{\tiny falcon $\left.\begin{array}{l} \nearrow \\ \searrow \end{array}\right.$}} & {\tiny call data pk} & \only<1>{$1024B \times 16 = 16 384$}\only<2>{$896B \times 16 = 14 336$} & {\tiny call data sig} & $666B \times 16 = 10656$ \\
+%     & {\tiny store pk} & \only<1>{$1024B \times 200 = 204 800$}\only<2>{$896B \times 200 = 179 200$} & {\tiny copy pk} & \only<1>{$1024B \times 100 \div 32 = 3 200$}\only<2>{$896B \times 100 \div 32 = 2 800$} \\
+%     & {\tiny total} & \only<1>{\textcolor{green}{$254$k {\tiny (\$0.24)}}}\only<2>{\textcolor{green}{$226$k {\tiny (\$0.22)}}} & {\tiny total} & \textcolor{green}{$17$k {\tiny (\$0.02)}}\\
+%     \hline
+%     & {\tiny create2} & $32000$ & & \\
+%     {\tiny ecrecover $\to$} &  & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
+%     {\tiny falconrecover $\to$} & & & {\tiny call data sig} & $1291B \times 16 = 20656$ \\
+%     & {\tiny total} & \textcolor{green}{$32$k {\tiny (\$0.03)}} & {\tiny total} & \textcolor{green}{$22$k {\tiny (\$0.02)}}\\
+%     \hline
+%     & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
+%     {\tiny ecrecover $\to$} & & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
+%     \multirow{2}{*}{{\tiny mldsa $\left.\begin{array}{l} \nearrow \\ \searrow \end{array}\right.$}} & {\tiny call data pk} & \only<1>{$\textcolor{red}{20512B} \times 16 = 328 192$}\only<2>{$1312B \times 16 = 20 992$} & {\tiny call data sig} & $2420B \times 16 = 38 720$ \\
+%     & {\tiny store pk} & \only<1>{$\textcolor{red}{20512B} \times 200 = 4 102 400$}\only<2>{$1312B \times 200 = 262 400$} & {\tiny copy pk} & \only<1>{$\textcolor{red}{20512B} \times 100 \div 32 = 64100$}\only<2>{$1312B \times 100 \div 32 = 4100$}\\
+%     & {\tiny total} & \only<1>{\textcolor{green}{$4462$k {\tiny (\$4.28)}}}\only<2>{\textcolor{green}{$315$k {\tiny (\$0.30)}}} & {\tiny total} & \only<1>{\textcolor{green}{$106$k {\tiny (\$0.10)}}}\only<2>{\textcolor{green}{$46$k {\tiny (\$0.04)}}}\\
+%     \hline
+%   \end{tabular}
+% \end{frame}
+
+\begin{frame}{On-chain data gas cost (lower bound estimation)}
   \centering
   \begin{tabular}{|r|l>{\raggedleft\arraybackslash}p{4cm}|l>{\raggedleft\arraybackslash}p{4.3cm}|}
     \hline
@@ -679,20 +684,20 @@
     \hline
     & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
     {\tiny ecrecover $\to$} & & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
-    \multirow{2}{*}{{\tiny falcon $\left.\begin{array}{l} \nearrow \\ \searrow \end{array}\right.$}} & {\tiny call data pk} & \only<1>{$1024B \times 16 = 16 384$}\only<2>{$896B \times 16 = 14 336$} & {\tiny call data sig} & $666B \times 16 = 10656$ \\
-    & {\tiny store pk} & \only<1>{$1024B \times 200 = 204 800$}\only<2>{$896B \times 200 = 179 200$} & {\tiny copy pk} & \only<1>{$1024B \times 100 \div 32 = 3 200$}\only<2>{$896B \times 100 \div 32 = 2 800$} \\
-    & {\tiny total} & \only<1>{\textcolor{green}{$254$k}}\only<2>{\textcolor{green}{$226$k}} & {\tiny total} & \textcolor{green}{$17$k}\\
+    \multirow{2}{*}{{\tiny falcon $\left.\begin{array}{l} \nearrow \\ \searrow \end{array}\right.$}} & {\tiny call data pk} & $896B \times 16 = 14 336$ & {\tiny call data sig} & $666B \times 16 = 10656$ \\
+    & {\tiny store pk} & $896B \times 200 = 179 200$ & {\tiny copy pk} & $896B \times 100 \div 32 = 2 800$ \\
+    & {\tiny total} & \textcolor{green}{$226$k {\tiny (\$0.22)}} & {\tiny total} & \textcolor{green}{$17$k {\tiny (\$0.02)}}\\
     \hline
     & {\tiny create2} & $32000$ & & \\
     {\tiny ecrecover $\to$} &  & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
     {\tiny falconrecover $\to$} & & & {\tiny call data sig} & $1291B \times 16 = 20656$ \\
-    & {\tiny total} & \textcolor{green}{$32$k} & {\tiny total} & \textcolor{green}{$22$k}\\
+    & {\tiny total} & \textcolor{green}{$32$k {\tiny (\$0.03)}} & {\tiny total} & \textcolor{green}{$22$k {\tiny (\$0.02)}}\\
     \hline
     & {\tiny create2} & $32000$ & {\tiny extcodecopy} & $2600$\\
     {\tiny ecrecover $\to$} & & & {\tiny call data sig} & $65B \times 16 = 1040$ \\
-    \multirow{2}{*}{{\tiny mldsa $\left.\begin{array}{l} \nearrow \\ \searrow \end{array}\right.$}} & {\tiny call data pk} & \only<1>{$\textcolor{red}{20512B} \times 16 = 328 192$}\only<2>{$1312B \times 16 = 20 992$} & {\tiny call data sig} & $2420B \times 16 = 38 720$ \\
-    & {\tiny store pk} & \only<1>{$\textcolor{red}{20512B} \times 200 = 4 102 400$}\only<2>{$1312B \times 200 = 262 400$} & {\tiny copy pk} & \only<1>{$\textcolor{red}{20512B} \times 100 \div 32 = 64100$}\only<2>{$1312B \times 100 \div 32 = 4100$}\\
-    & {\tiny total} & \only<1>{\textcolor{green}{$4462$k}}\only<2>{\textcolor{green}{$315$k}} & {\tiny total} & \only<1>{\textcolor{green}{$106$k}}\only<2>{\textcolor{green}{$46$k}}\\
+    \multirow{2}{*}{{\tiny mldsa $\left.\begin{array}{l} \nearrow \\ \searrow \end{array}\right.$}} & {\tiny call data pk} & $1312B \times 16 = 20 992$ & {\tiny call data sig} & $2420B \times 16 = 38 720$ \\
+    & {\tiny store pk} & $1312B \times 200 = 262 400$ & {\tiny copy pk} & $1312B \times 100 \div 32 = 4100$\\
+    & {\tiny total} & \textcolor{green}{$315$k {\tiny (\$0.30)}} & {\tiny total} & \textcolor{green}{$46$k {\tiny (\$0.04)}}\\
     \hline
   \end{tabular}
 \end{frame}
